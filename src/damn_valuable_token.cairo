@@ -5,27 +5,25 @@ from starkware.cairo.common.uint256 import Uint256
 
 from openzeppelin.token.erc20.library import ERC20
 
-//* -------------------------------------------------------------------------- *//
-//*                               Initialization                               *//
-//* -------------------------------------------------------------------------- *//
+// * -------------------------------------------------------------------------- * //
+// *                               Initialization                               * //
+// * -------------------------------------------------------------------------- * //
 
 const NAME = 'Damn Valuable Token';
 const SYMBOL = 'DVT';
 const DECIMALS = 18;
-const INITIAL_SUPPLY = 1000000000000000000000000; // 1 million tokens, 18 decimals
+const INITIAL_SUPPLY = 1000000000000000000000000;  // 1 million tokens, 18 decimals
 
 @constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    recipient: felt
-) {
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(recipient: felt) {
     ERC20.initializer(NAME, SYMBOL, DECIMALS);
     ERC20._mint(recipient, Uint256(INITIAL_SUPPLY, 0));
     return ();
 }
 
-//* -------------------------------------------------------------------------- *//
-//*                                   Getters                                  *//
-//* -------------------------------------------------------------------------- *//
+// * -------------------------------------------------------------------------- * //
+// *                                   Getters                                  * //
+// * -------------------------------------------------------------------------- * //
 
 @view
 func name{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (name: felt) {
@@ -66,9 +64,9 @@ func allowance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return ERC20.allowance(owner, spender);
 }
 
-//* -------------------------------------------------------------------------- *//
-//*                                  Externals                                 *//
-//* -------------------------------------------------------------------------- *//
+// * -------------------------------------------------------------------------- * //
+// *                                  Externals                                 * //
+// * -------------------------------------------------------------------------- * //
 
 @external
 func transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
