@@ -8,7 +8,6 @@ from openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.unstoppable.interfaces.IUnstoppableLender import IUnstoppableLender
 
-
 // * -------------------------------------------------------------------------- * //
 // *                                   Storage                                  * //
 // * -------------------------------------------------------------------------- * //
@@ -21,15 +20,12 @@ func _owner() -> (res: felt) {
 func _pool() -> (res: felt) {
 }
 
-
 // * -------------------------------------------------------------------------- * //
 // *                               Initialization                               * //
 // * -------------------------------------------------------------------------- * //
 
 @constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    pool: felt
-) {
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(pool: felt) {
     _pool.write(pool);
 
     let (caller) = get_caller_address();
@@ -38,15 +34,13 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return ();
 }
 
-
 // * -------------------------------------------------------------------------- * //
 // *                                  Externals                                 * //
 // * -------------------------------------------------------------------------- * //
 
 @external
 func receiveTokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    token_address: felt,
-    amount: Uint256
+    token_address: felt, amount: Uint256
 ) {
     let (caller) = get_caller_address();
     let (pool) = _pool.read();
@@ -54,7 +48,7 @@ func receiveTokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     // Sender must be _pool
     assert caller = pool;
 
-    //Return all tokens to the _pool
+    // Return all tokens to the _pool
     IERC20.transfer(token_address, caller, amount);
 
     return ();

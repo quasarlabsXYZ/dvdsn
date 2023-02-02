@@ -10,7 +10,7 @@ namespace ITrusterLenderPool {
         target: felt,
         selector: felt,
         calldata_len: felt,
-        calldata: felt*
+        calldata: felt*,
     ) -> (block_timestamp: felt) {
     }
 }

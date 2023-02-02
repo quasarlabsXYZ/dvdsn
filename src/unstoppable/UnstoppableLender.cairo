@@ -1,18 +1,20 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.uint256 import Uint256, assert_uint256_lt, uint256_add, assert_uint256_le, assert_uint256_eq
-from starkware.starknet.common.syscalls import (
-    get_caller_address,
-    get_contract_address
+from starkware.cairo.common.uint256 import (
+    Uint256,
+    assert_uint256_lt,
+    uint256_add,
+    assert_uint256_le,
+    assert_uint256_eq,
 )
+from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 from starkware.cairo.common.math import assert_lt_felt
 
 from openzeppelin.token.erc20.IERC20 import IERC20
 from openzeppelin.security.reentrancyguard.library import ReentrancyGuard
 
 from src.unstoppable.interfaces.IReceiverUnstoppable import IReceiverUnstoppable
-
 
 // * -------------------------------------------------------------------------- * //
 // *                                   Storage                                  * //
@@ -30,21 +32,17 @@ func _poolBalance() -> (res: Uint256) {
 func _receiverAddress() -> (res: felt) {
 }
 
-
 // * -------------------------------------------------------------------------- * //
 // *                               Initialization                               * //
 // * -------------------------------------------------------------------------- * //
 
 @constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    token: felt
-) {
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(token: felt) {
     assert_lt_felt(0, token);
     _token.write(token);
 
     return ();
 }
-
 
 // * -------------------------------------------------------------------------- * //
 // *                                  Externals                                 * //
@@ -56,7 +54,7 @@ func depositTokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 ) {
     ReentrancyGuard.start();
 
-    assert_uint256_lt(Uint256(0,0), amount);
+    assert_uint256_lt(Uint256(0, 0), amount);
     let (token) = _token.read();
     let (caller) = get_caller_address();
     let (contract) = get_contract_address();

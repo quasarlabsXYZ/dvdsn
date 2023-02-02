@@ -1,21 +1,14 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import (Uint256, uint256_eq)
+from starkware.cairo.common.uint256 import Uint256, uint256_eq
 
 from openzeppelin.token.erc20.IERC20 import IERC20
 
-from src.DamnValuableToken import (
-    NAME,
-    SYMBOL,
-    DECIMALS,
-    INITIAL_SUPPLY
-)
+from src.DamnValuableToken import NAME, SYMBOL, DECIMALS, INITIAL_SUPPLY
 
 @view
-func __setup__{
-    syscall_ptr: felt*, range_check_ptr
-}() {
+func __setup__{syscall_ptr: felt*, range_check_ptr}() {
     alloc_locals;
 
     local DVT: felt;
@@ -30,9 +23,7 @@ func __setup__{
 }
 
 @external
-func test_name{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_name{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     local DVT: felt;
 
@@ -45,9 +36,7 @@ func test_name{
 }
 
 @external
-func test_symbol{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_symbol{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     local DVT: felt;
 
@@ -60,9 +49,7 @@ func test_symbol{
 }
 
 @external
-func test_decimals{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_decimals{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     local DVT: felt;
 
@@ -75,9 +62,7 @@ func test_decimals{
 }
 
 @external
-func test_token_holdings{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_token_holdings{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
 
     local DVT: felt;
@@ -97,9 +82,7 @@ func test_token_holdings{
 }
 
 @external
-func test_transfer{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
 
     local DVT: felt;

@@ -10,7 +10,6 @@ from src.unstoppable.interfaces.IUnstoppableLender import IUnstoppableLender
 from src.unstoppable.interfaces.IReceiverUnstoppable import IReceiverUnstoppable
 from src.DamnValuableToken import INITIAL_SUPPLY
 
-
 // * -------------------------------------------------------------------------- * //
 // *                               Initialization                               * //
 // * -------------------------------------------------------------------------- * //
@@ -42,7 +41,7 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
         context.deployer = ids.deployer
         context.attacker = ids.attacker
     %}
-    
+
     // Give approvals
     %{ stop_prank_callable = start_prank(ids.deployer, target_contract_address=ids.DVT) %}
     IERC20.approve(DVT, deployer, Uint256(INITIAL_SUPPLY, 0));
@@ -78,7 +77,6 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
     return ();
 }
 
-
 // * -------------------------------------------------------------------------- * //
 // *                                   Hacking                                  * //
 // * -------------------------------------------------------------------------- * //
@@ -96,7 +94,7 @@ func test_hack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     local initial_attacker_token_balance: Uint256 = Uint256(100, 0);
     local borrow_amount: Uint256 = Uint256(10, 0);
 
-    %{ 
+    %{
         ids.DVT = context.DVT
         ids.UNSTOPPABLE_LENDER = context.UNSTOPPABLE_LENDER
         ids.RECEIVER_UNSTOPPABLE = context.RECEIVER_UNSTOPPABLE
@@ -112,7 +110,7 @@ func test_hack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     // * -------------------------------- Checking -------------------------------- * //
 
-    //It should be no longer possible to execute flash loans
+    // It should be no longer possible to execute flash loans
     %{ expect_revert() %}
     IReceiverUnstoppable.executeFlashLoan(RECEIVER_UNSTOPPABLE, borrow_amount);
 

