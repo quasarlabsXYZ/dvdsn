@@ -7,8 +7,3 @@ cairo-path = [
 
 [contracts]
 DVT = ["src/damn_valuable_token.cairo"]
-receiver_unstoppable = ["src/unstoppable/receiver_unstoppable.cairo"]
-unstoppable_lender = ["src/unstoppable/unstoppable_lender.cairo"]
-
-[test]
-disable-hint-validation = true
