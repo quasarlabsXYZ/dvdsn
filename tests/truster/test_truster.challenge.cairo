@@ -15,26 +15,24 @@ from src.DamnValuableToken import INITIAL_SUPPLY
 // * -------------------------------------------------------------------------- * //
 
 @view
-func __setup__{
-    syscall_ptr: felt*, range_check_ptr
-}() {
+func __setup__{syscall_ptr: felt*, range_check_ptr}() {
     alloc_locals;
 
     local DVT: felt;
     local TRUSTER_POOL: felt;
 
-    local admin = 'starknet-admin';
+    local deployer = 'starknet-deployer';
 
     %{
-        context.DVT = deploy_contract("src/DamnValuableToken.cairo", [ids.admin]).contract_address
+        context.DVT = deploy_contract("src/DamnValuableToken.cairo", [ids.deployer]).contract_address
         context.TRUSTER_POOL = deploy_contract("src/truster/TrusterLenderPool.cairo", [context.DVT]).contract_address
-        context.admin = ids.admin
+        context.deployer = ids.deployer
 
         ids.DVT = context.DVT
         ids.TRUSTER_POOL = context.TRUSTER_POOL
     %}
 
-    %{ stop_prank_callable = start_prank(ids.admin, target_contract_address=ids.DVT) %}
+    %{ stop_prank_callable = start_prank(ids.deployer, target_contract_address=ids.DVT) %}
     IERC20.transfer(DVT, TRUSTER_POOL, Uint256(INITIAL_SUPPLY, 0));
     %{ stop_prank_callable() %}
 
@@ -52,9 +50,7 @@ func __setup__{
 // * -------------------------------------------------------------------------- * //
 
 @external
-func test_hack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_hack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
 
     local DVT: felt;

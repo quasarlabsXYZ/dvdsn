@@ -13,7 +13,7 @@ from openzeppelin.token.erc20.IERC20 import IERC20
 // * -------------------------------------------------------------------------- * //
 
 @storage_var
-func token() -> (res: felt) {
+func _token() -> (res: felt) {
 }
 
 
@@ -23,9 +23,9 @@ func token() -> (res: felt) {
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _token: felt
+    token: felt
 ) {
-    token.write(_token);
+    _token.write(token);
     return ();
 }
 
@@ -46,11 +46,11 @@ func flashLoan{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     ReentrancyGuard.start();
 
     let (pool_address) = get_contract_address();
-    let (_token) = token.read();
+    let (token) = _token.read();
 
-    let balance_before: Uint256 = IERC20.balanceOf(_token, pool_address);
+    let balance_before: Uint256 = IERC20.balanceOf(token, pool_address);
 
-    IERC20.transfer(_token, borrower, amount);
+    IERC20.transfer(token, borrower, amount);
     let results = call_contract(
         contract_address = target,
         function_selector = selector,
@@ -58,7 +58,7 @@ func flashLoan{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         calldata = calldata
     );
 
-    let balance_after: Uint256 = IERC20.balanceOf(_token, pool_address);
+    let balance_after: Uint256 = IERC20.balanceOf(token, pool_address);
     assert_uint256_le(balance_before, balance_after);
 
     ReentrancyGuard.end();

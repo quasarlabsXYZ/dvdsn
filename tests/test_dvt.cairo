@@ -5,7 +5,7 @@ from starkware.cairo.common.uint256 import (Uint256, uint256_eq)
 
 from openzeppelin.token.erc20.IERC20 import IERC20
 
-from src.damn_valuable_token import (
+from src.DamnValuableToken import (
     NAME,
     SYMBOL,
     DECIMALS,
@@ -19,11 +19,11 @@ func __setup__{
     alloc_locals;
 
     local DVT: felt;
-    local admin = 'starknet-admin';
+    local deployer = 'starknet-deployer';
 
     %{
-        context.DVT = deploy_contract("src/damn_valuable_token.cairo", [ids.admin]).contract_address
-        context.admin = ids.admin
+        context.DVT = deploy_contract("src/DamnValuableToken.cairo", [ids.deployer]).contract_address
+        context.deployer = ids.deployer
     %}
 
     return ();
@@ -81,15 +81,15 @@ func test_token_holdings{
     alloc_locals;
 
     local DVT: felt;
-    local admin: felt;
+    local deployer: felt;
 
     %{
         ids.DVT = context.DVT
-        ids.admin = context.admin
+        ids.deployer = context.deployer
     %}
 
-    let (admin_holding) = IERC20.balanceOf(DVT, admin);
-    let (res) = uint256_eq(admin_holding, Uint256(INITIAL_SUPPLY, 0));
+    let (deployer_holding) = IERC20.balanceOf(DVT, deployer);
+    let (res) = uint256_eq(deployer_holding, Uint256(INITIAL_SUPPLY, 0));
 
     assert res = 1;
 
@@ -103,21 +103,21 @@ func test_transfer{
     alloc_locals;
 
     local DVT: felt;
-    local admin: felt;
+    local deployer: felt;
     local alice = 'alice';
     local transfer_amt = 100;
 
     %{
         ids.DVT = context.DVT
-        ids.admin = context.admin
+        ids.deployer = context.deployer
     %}
 
-    %{ stop_prank_callable = start_prank(ids.admin, target_contract_address=ids.DVT) %}
+    %{ stop_prank_callable = start_prank(ids.deployer, target_contract_address=ids.DVT) %}
     IERC20.transfer(DVT, alice, Uint256(transfer_amt, 0));
     %{ stop_prank_callable() %}
 
-    let (admin_holding) = IERC20.balanceOf(DVT, admin);
-    let (res) = uint256_eq(admin_holding, Uint256(INITIAL_SUPPLY - transfer_amt, 0));
+    let (deployer_holding) = IERC20.balanceOf(DVT, deployer);
+    let (res) = uint256_eq(deployer_holding, Uint256(INITIAL_SUPPLY - transfer_amt, 0));
     assert res = 1;
 
     let (alice_holding) = IERC20.balanceOf(DVT, alice);

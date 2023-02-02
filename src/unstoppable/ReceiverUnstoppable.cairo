@@ -14,11 +14,11 @@ from src.unstoppable.interfaces.IUnstoppableLender import IUnstoppableLender
 // * -------------------------------------------------------------------------- * //
 
 @storage_var
-func owner() -> (res: felt) {
+func _owner() -> (res: felt) {
 }
 
 @storage_var
-func pool() -> (res: felt) {
+func _pool() -> (res: felt) {
 }
 
 
@@ -28,11 +28,13 @@ func pool() -> (res: felt) {
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    pool_address: felt
+    pool: felt
 ) {
-    pool.write(pool_address);
+    _pool.write(pool);
+
     let (caller) = get_caller_address();
-    owner.write(caller);
+    _owner.write(caller);
+
     return ();
 }
 
@@ -42,35 +44,35 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // * -------------------------------------------------------------------------- * //
 
 @external
-func receive_tokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func receiveTokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     token_address: felt,
     amount: Uint256
 ) {
     let (caller) = get_caller_address();
-    let (pool_address) = pool.read();
+    let (pool) = _pool.read();
 
-    // Sender must be pool
-    assert caller = pool_address;
+    // Sender must be _pool
+    assert caller = pool;
 
-    //Return all tokens to the pool
+    //Return all tokens to the _pool
     IERC20.transfer(token_address, caller, amount);
 
     return ();
 }
 
 @external
-func execute_flash_loan{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func executeFlashLoan{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     amount: Uint256
 ) {
     let (caller) = get_caller_address();
-    let (own) = owner.read();
-    let (pool_address) = pool.read();
+    let (owner) = _owner.read();
+    let (pool) = _pool.read();
 
-    // Sender must be owner
-    assert caller = own;
+    // Sender must be _owner
+    assert caller = owner;
 
     // Execute flash loan
-    IUnstoppableLender.flash_loan(pool_address, amount);
+    IUnstoppableLender.flashLoan(pool, amount);
 
     return ();
 }
