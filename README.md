@@ -23,7 +23,7 @@
 1. Set up [protostar](https://github.com/software-mansion/protostar)
 2. Clone this [repository](https://github.com/quasarlabsXYZ/dvdsn)
 3. Install dependencies with `protostar install`
-4. Hack and run `protostar test tests/[challenge-name]/[challenge-name].challenge.cairo`
+4. Hack and run `protostar test tests/[challenge-name]/test_[challenge-name].challenge.cairo`
 
 ## Contributing
 
