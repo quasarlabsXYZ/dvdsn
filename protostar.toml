@@ -10,6 +10,9 @@ DVT = ["src/damn_valuable_token.cairo"]
 receiver_unstoppable = ["src/unstoppable/receiver_unstoppable.cairo"]
 unstoppable_lender = ["src/unstoppable/unstoppable_lender.cairo"]
 truster = ["src/truster/truster_lender_pool.cairo"]
+SELP = ["src/SideEntranceLenderPool.cairo"]
+DVT = ["src/damn_valuable_token.cairo"]
+SELP_Attacker = ["src/SELP_Attacker.cairo"]
 
 [test]
 disable-hint-validation = true
