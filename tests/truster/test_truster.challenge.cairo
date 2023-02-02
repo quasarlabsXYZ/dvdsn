@@ -6,21 +6,13 @@ from starkware.cairo.common.alloc import alloc
 
 from openzeppelin.token.erc20.IERC20 import IERC20
 
-from src.damn_valuable_token import INITIAL_SUPPLY
-from src.truster.truster_lender_pool import flashLoan
+from src.truster.interfaces.ITrusterLenderPool import ITrusterLenderPool
+from src.DamnValuableToken import INITIAL_SUPPLY
 
-@contract_interface
-namespace ITrusterLenderPool {
-    func flashLoan(
-        amount: Uint256,
-        borrower: felt,
-        target: felt,
-        selector: felt,
-        calldata_len: felt,
-        calldata: felt*
-    ) -> (block_timestamp: felt) {
-    }
-}
+
+// * -------------------------------------------------------------------------- * //
+// *                               Initialization                               * //
+// * -------------------------------------------------------------------------- * //
 
 @view
 func __setup__{
@@ -34,14 +26,12 @@ func __setup__{
     local admin = 'starknet-admin';
 
     %{
-        context.DVT = deploy_contract("src/damn_valuable_token.cairo", [ids.admin]).contract_address
-        context.TRUSTER_POOL = deploy_contract("src/truster/truster_lender_pool.cairo", [context.DVT]).contract_address
+        context.DVT = deploy_contract("src/DamnValuableToken.cairo", [ids.admin]).contract_address
+        context.TRUSTER_POOL = deploy_contract("src/truster/TrusterLenderPool.cairo", [context.DVT]).contract_address
         context.admin = ids.admin
 
         ids.DVT = context.DVT
         ids.TRUSTER_POOL = context.TRUSTER_POOL
-
-        print("DVT: ", hex(context.DVT))
     %}
 
     %{ stop_prank_callable = start_prank(ids.admin, target_contract_address=ids.DVT) %}
@@ -55,6 +45,11 @@ func __setup__{
 
     return ();
 }
+
+
+// * -------------------------------------------------------------------------- * //
+// *                                   Hacking                                  * //
+// * -------------------------------------------------------------------------- * //
 
 @external
 func test_hack{
@@ -71,12 +66,7 @@ func test_hack{
         ids.TRUSTER_POOL = context.TRUSTER_POOL
     %}
 
-
-    // * -------------------------------------------------------------------------- * //
-    // *                                   Hacking                                  * //
-    // * -------------------------------------------------------------------------- * //
-
-    // Your code here...
+    // * ---------------------------- Your code here... --------------------------- * //
 
     let calldata: felt* = alloc();
     tempvar initial_supply: Uint256  = Uint256(INITIAL_SUPPLY, 0);
@@ -103,9 +93,7 @@ func test_hack{
     IERC20.transferFrom(DVT, TRUSTER_POOL, attacker, Uint256(INITIAL_SUPPLY, 0));
 
 
-    // * -------------------------------------------------------------------------- * //
-    // *                                  Checking                                  * //
-    // * -------------------------------------------------------------------------- * //
+    // * -------------------------------- Checking -------------------------------- * //
 
     let (pool_balance: Uint256) = IERC20.balanceOf(DVT, TRUSTER_POOL);
     let (attacker_balance: Uint256) = IERC20.balanceOf(DVT, attacker);
@@ -116,7 +104,7 @@ func test_hack{
     let (attacker_res) = uint256_eq(attacker_balance, Uint256(INITIAL_SUPPLY, 0));
     assert attacker_res = 1;
 
-    %{ print("Truster: Challenge Completed!") %}
+    %{ print("Truster: Challenge Completed! ✨") %}
 
     return ();
 }

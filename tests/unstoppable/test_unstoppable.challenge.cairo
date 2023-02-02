@@ -15,39 +15,10 @@ from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt, uint256_check, uint256_eq, assert_uint256_eq
 )
 
-@contract_interface
-namespace IReceiverUnstoppable {
-    func execute_flash_loan(amount: Uint256) {
-    }
-}
+from openzeppelin.token.erc20.IERC20 import IERC20
 
-@contract_interface
-namespace IDVT {
-    func approve(spender: felt, amount: Uint256) {
-    }
-    
-    func allowance(owner: felt, spender: felt) -> (remaining: Uint256) {
-    }
-
-    func balanceOf(account: felt) -> (balance: Uint256) {
-    }
-
-    func transfer(recipient: felt, amount: Uint256) -> (success: felt) {
-    }
-}
-
-@contract_interface
-namespace IUnstoppableLender {
-    func deposit_tokens(amount: Uint256) {
-    }
-
-    func set_receiver_unstoppable_address(receiver_unstoppable: felt) {
-    }
-
-    func flash_loan(amount: Uint256) {
-    }
-    
-}
+from src.unstoppable.interfaces.IUnstoppableLender import IUnstoppableLender
+from src.unstoppable.interfaces.IReceiverUnstoppable import IReceiverUnstoppable
 
 @storage_var
 func caller_address() -> (res: felt) {
@@ -74,7 +45,7 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
         deployer = start_prank(1)
      %}
     let (local deployer: felt) = get_caller_address();
-    // Deploy IDVT
+    // Deploy IERC20
     %{ context.dvt = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20.cairo", 
         [
             ids.token_name, 
@@ -86,25 +57,25 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
         ]).contract_address %}
     %{ ids.dvt = context.dvt %}
     // Deploy unstoppable_lender
-    %{ context.unstoppable_lender = deploy_contract("./src/unstoppable/unstoppable_lender.cairo", [context.dvt]).contract_address %}
+    %{ context.unstoppable_lender = deploy_contract("./src/unstoppable/UnstoppableLender.cairo", [context.dvt]).contract_address %}
     %{ ids.unstoppable_lender = context.unstoppable_lender %}
     %{ 
         deployer_dvt = start_prank(1, ids.dvt)
         deployer_unstoppable_lender = start_prank(1, ids.unstoppable_lender)
      %}
     // Give approval
-    IDVT.approve(dvt, deployer, initial_supply);
-    IDVT.approve(dvt, unstoppable_lender, tokens_in_pool);
+    IERC20.approve(dvt, deployer, initial_supply);
+    IERC20.approve(dvt, unstoppable_lender, tokens_in_pool);
 
     // Deposit tokens
     IUnstoppableLender.deposit_tokens(unstoppable_lender, tokens_in_pool);
 
     // Transfer tokens to attacker
-    IDVT.transfer(dvt, 2, initial_attacker_token_balance);
+    IERC20.transfer(dvt, 2, initial_attacker_token_balance);
 
     // Ensure balances are correct
-    let (unstoppable_lender_balance) = IDVT.balanceOf(dvt, unstoppable_lender);
-    let (attacker_balance) = IDVT.balanceOf(dvt, 2);
+    let (unstoppable_lender_balance) = IERC20.balanceOf(dvt, unstoppable_lender);
+    let (attacker_balance) = IERC20.balanceOf(dvt, 2);
     assert_uint256_eq(unstoppable_lender_balance, tokens_in_pool);
     assert_uint256_eq(attacker_balance, initial_attacker_token_balance);
 
@@ -116,7 +87,7 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
 
     // Show it's possible for some user to take out flash loan
 
-    %{ context.receiver_unstoppable = deploy_contract("./src/unstoppable/receiver_unstoppable.cairo", [context.unstoppable_lender]).contract_address %}
+    %{ context.receiver_unstoppable = deploy_contract("./src/unstoppable/ReceiverUnstoppable.cairo", [context.unstoppable_lender]).contract_address %}
     %{ ids.receiver_unstoppable = context.receiver_unstoppable %}
 
     let (some_user) = get_caller_address();
@@ -148,7 +119,7 @@ func test_unstoppable_exploit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
     %}
 
     // CODE YOUR EXPLOIT HERE
-    IDVT.transfer(dvt, unstoppable_lender, initial_attacker_token_balance);
+    IERC20.transfer(dvt, unstoppable_lender, initial_attacker_token_balance);
 
     %{ attacker %}
 
