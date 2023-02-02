@@ -41,6 +41,22 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // ERC20Snapshot custom functions
 //
 
+@view
+func totalSupplyAt{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    snapshotId: Uint256
+) -> (totalSupply: Uint256) {
+    let (totalSupply: Uint256) = ERC20Snapshot.totalSupplyAt(snapshotId);
+    return (totalSupply=totalSupply);
+}
+
+@view
+func balanceOfAt{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    account: felt, snapshotId: Uint256
+) -> (value: Uint256) {
+    let (value: Uint256) = ERC20Snapshot.balanceOfAt(account, snapshotId);
+    return (value=value);
+}
+
 @external
 func mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     to: felt, amount: Uint256
@@ -62,7 +78,7 @@ func snapshot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}()
     value: Uint256
 ) {
     AccessControl.assert_only_role(SNAPSHOT_ROLE);
-    return ERC20Snapshot.snapshot();
+    return ERC20Snapshot._snapshot();
 }
 
 //
