@@ -12,14 +12,28 @@
 - **DVDSN is a project starts at the TVL Hackers Building (Feb 2023) and still under active development, any contribution is welcome!**
 - **Please feel free to reach out to [@dcfpascal](https://t.me/dcfpascal) or [@kootsZhin](https://t.me/kootsZhin) on Telegram if you have any question.**
 
+## Challenges
+
+| #    | Name                               |
+| :--- | :--------------------------------- |
+| 1    | [Placeholder](docs/Placeholder.md) |
+
+## Hacking
+
+1. Set up [protostar](https://github.com/software-mansion/protostar)
+2. Clone this [repository](https://github.com/quasarlabsXYZ/dvdsn)
+3. Install dependencies with `protostar install`
+4. Hack and run `protostar tests/[challenge-name]/[challenge-name].challenge.cairo`
+
 ## Contributing
 
 PRs are welcomed!
 
-1. Setting up [protostar](https://github.com/software-mansion/protostar)
-2. Fork this repo
+1. Set up [protostar](https://github.com/software-mansion/protostar)
+2. Fork this [repository](https://github.com/quasarlabsXYZ/dvdsn)
 3. Install dependencies with `protostar install`
-4. Create challenges in separated folders under [`src/`](src/) and solving framework under [`test/`](test/)
+4. Create challenge in separated folders under [`src/`](src/) and solving framework under [`tests/`](tests/)
+5. Add challenge statement under [`docs/`](docs/) and update [`README.md`](README.md)
 
 ## Reference
 
@@ -29,4 +43,4 @@ PRs are welcomed!
 
 ## License
 
-MIT © 2023
+[MIT © 2023](LICENSE)
