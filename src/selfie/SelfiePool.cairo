@@ -56,57 +56,61 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 
 @view
 func max_flash_loan{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _token: felt
-) -> (res: felt) {
+    _flash_loan_token: felt
+) -> (balance: Uint256) {
     let (token) = _token.read();
     let (contract) = get_contract_address();
-    if (token == _token) {
-        return ERC20Snapshot.balanceOf(contract);
+    let zero: Uint256 = Uint256(0, 0);
+    if (token == _flash_loan_token) {
+        let balance = IERC20.balanceOf(token, contract);
+        return (balance);
     }
-    return 0;
+    return (balance=zero);
 }
 
 @view
 func flash_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _token: felt
-) -> (res: felt) {
+    _flash_loan_token: felt
+) -> (res: Uint256) {
     let (token) = _token.read();
+    let zero = Uint256(0, 0);
     with_attr error_message("Unsupported Currency") {
-        assert _token = token;
+        assert _flash_loan_token = token;
     }
-    return 0;
+    return (res=zero);
 }
 
 @external
 func flash_loan{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     _receiver: felt,
-    _token: felt,
+    _flash_loan_token: felt,
     _amount: Uint256,
     calldata_len: felt,
     calldata: felt*
 ) -> (res: felt) {
+    alloc_locals;
     ReentrancyGuard.start();
     let (local token) = _token.read();
     let (caller) = get_caller_address();
 
     // Ensure token is supported
     with_attr error_message("Unsupported Currency") {
-        assert _token = token;
+        assert _flash_loan_token = token;
     }
 
     // transfer token
-    ERC20Snapshot.transfer(token, _receiver, _amount);
+    IERC20.transfer(token, _receiver, _amount);
     // with_attr error_message("Callback failed") {
     // // should return keccak of: "ERC3156FlashBorrower.onFlashLoan"
     //         assert IERC3156FlashBorrower.onFlashLoan(caller, _token, _amount, 0, calldata_len, calldata)
     // }
 
     with_attr error_message("Repay failed") {
-        ERC20Snapshot.transferFrom(token, _receiver, caller, _amount);
+        IERC20.transferFrom(token, _receiver, caller, _amount);
     }
 
     ReentrancyGuard.end();
-    return (1);    
+    return (res=1);    
 }
 
 @external
@@ -115,9 +119,12 @@ func emergency_exit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 ) {
     //only Governance can call
     let (caller) = get_caller_address();
-    let amount = ERC20Snapshot.balanceOf(caller);
-    ERC20Snapshot.transfer(receiver, amount);
+    let (token) = _token.read();
+    let (amount) = IERC20.balanceOf(token, caller);
+    IERC20.transfer(token, receiver, amount);
 
     //emit funds drained
     FundsDrained.emit(receiver, amount);
+
+    return ();
 }
