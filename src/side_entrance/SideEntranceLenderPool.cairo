@@ -2,7 +2,13 @@
 from starkware.cairo.common.math import assert_nn, assert_not_zero
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
-from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_add, assert_uint256_eq, uint256_sub
+from starkware.cairo.common.uint256 import (
+    Uint256,
+    uint256_le,
+    uint256_add,
+    assert_uint256_eq,
+    uint256_sub,
+)
 from openzeppelin.token.erc20.library import ERC20
 
 @contract_interface
@@ -22,10 +28,9 @@ namespace IDAMN {
 
 @contract_interface
 namespace IFlashLoanReceiver {
-    func execute(value: Uint256) {
+    func execute() {
     }
 }
-
 
 @storage_var
 func _poolBalance() -> (res: Uint256) {
@@ -43,19 +48,25 @@ func _receiverUnstoppable() -> (res: felt) {
 }
 
 @view
-func damnValuableToken{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (res: felt) {
+func damnValuableToken{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    res: felt
+) {
     let (res) = _damnValuableToken.read();
     return (res,);
 }
 
 @view
-func pool_Balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (res: Uint256) {
+func pool_Balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    res: Uint256
+) {
     let (res) = _poolBalance.read();
     return (res,);
 }
 
 @view
-func userBalance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(account:felt) -> (res: Uint256) {
+func userBalance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    account: felt
+) -> (res: Uint256) {
     let (res) = _userBalance.read(account);
     return (res,);
 }
@@ -71,14 +82,13 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 
 @external
 func depositTokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    amount: Uint256,
+    amount: Uint256
 ) {
-
     let zero_as_uint256: Uint256 = Uint256(0, 0);
     let (amnt) = uint256_le(amount, zero_as_uint256);
-    if (amnt == 1){
-        return();
-        }
+    if (amnt == 1) {
+        return ();
+    }
     // let amount = Uint256(low=amount_low, high=amount_high);
     let (damn) = _damnValuableToken.read();
     let (caller) = get_caller_address();
@@ -90,41 +100,40 @@ func depositTokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     let (newUsrBal, _) = uint256_add(usr, amount);
     _poolBalance.write(newBalance);
     _userBalance.write(caller, newUsrBal);
-    return ();   
+    return ();
 }
 
 @external
-func withdrawTokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-) {
-
+func withdrawTokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     let (damn) = _damnValuableToken.read();
     let (caller) = get_caller_address();
     let (contract_address) = get_contract_address();
-    
+
     let (res) = _poolBalance.read();
     let (usr) = _userBalance.read(caller);
     let (newBalance) = uint256_sub(res, usr);
     let (newUsrBal) = uint256_sub(usr, usr);
     _poolBalance.write(newBalance);
     _userBalance.write(caller, newUsrBal);
-    return ();   
+    IDAMN.transfer(damn, caller, usr);
+    return ();
 }
 
 @external
-func flashLoan{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(borrowAmount: Uint256
+func flashLoan{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    borrowAmount: Uint256
 ) {
     let (damn) = _damnValuableToken.read();
     let (caller) = get_caller_address();
     let (contract_address) = get_contract_address();
     let (balanceBefore) = IDAMN.balanceOf(damn, contract_address);
+
     IDAMN.transfer(damn, caller, borrowAmount);
-  
-    IFlashLoanReceiver.execute(caller, borrowAmount);
+
+    IFlashLoanReceiver.execute(caller);
     let (balanceAfter) = IDAMN.balanceOf(damn, contract_address);
     let (balance_check) = uint256_le(balanceBefore, balanceAfter);
+
     assert balance_check = 1;
     return ();
-    
-
 }
-
