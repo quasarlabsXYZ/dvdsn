@@ -14,6 +14,7 @@ receiver_unstoppable = ["src/unstoppable/ReceiverUnstoppable.cairo"]
 unstoppable_lender = ["src/unstoppable/UnstoppableLender.cairo"]
 truster = ["src/truster/TrusterLenderPool.cairo"]
 logic_delegate = ["src/logic_delegate/LogicDelegate.cairo"]
+side_entrance_lender_pool = ["src/SideEntranceLenderPool.cairo"]
 
 [test]
 disable-hint-validation = true
