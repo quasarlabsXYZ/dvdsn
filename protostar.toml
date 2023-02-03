@@ -7,6 +7,9 @@ cairo-path = [
 
 [contracts]
 DVT = ["src/DamnValuableToken.cairo"]
+
+naive_receiver_lender_pool = ["src/naive_receiver/NaiveReceiverLenderPool.cairo"]
+flash_loan_receiver = ["src/naive_receiver/FlashLoanReceiver.cairo"]
 receiver_unstoppable = ["src/unstoppable/ReceiverUnstoppable.cairo"]
 unstoppable_lender = ["src/unstoppable/UnstoppableLender.cairo"]
 truster = ["src/truster/TrusterLenderPool.cairo"]
