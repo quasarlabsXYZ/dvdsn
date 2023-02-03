@@ -28,7 +28,7 @@ from src.the_rewarder.interfaces.IRewardToken import IRewardToken
 from src.the_rewarder.interfaces.IERC20 import IERC20
 
 const REWARDS_ROUND_MIN_DURATION = 5 * 24 * 60 * 60;
-const REWARDS = 100 * 10 ** 18;
+const REWARDS = 100;
 
 const NAME = 'rToken';
 const SYMBOL = 'rTKN';
@@ -46,7 +46,7 @@ func reward_token() -> (address: felt) {
 }
 
 @storage_var
-func last_snapshot_id_for_rewards() -> (value: felt) {
+func last_snapshot_id_for_rewards() -> (value: Uint256) {
 }
 
 @storage_var
@@ -66,7 +66,6 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     _liquidity_token: felt, accounting_class_hash: felt, reward_class_hash: felt
 ) {
     liquidity_token.write(_liquidity_token);
-    let (ctor_calldata) = alloc();
     let (accounting_address: felt) = deploy(
         class_hash=accounting_class_hash,
         contract_address_salt=0,
@@ -75,12 +74,12 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         deploy_from_zero=FALSE,
     );
     accounting_token.write(accounting_address);
-
+    let (empty_calldata) = alloc();
     let (reward_address: felt) = deploy(
         class_hash=reward_class_hash,
         contract_address_salt=1,
         constructor_calldata_size=0,
-        constructor_calldata=ctor_calldata,
+        constructor_calldata=empty_calldata,
         deploy_from_zero=FALSE,
     );
     reward_token.write(reward_address);
@@ -129,12 +128,9 @@ func distributeRewards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     rewards: Uint256
 ) {
     alloc_locals;
-    let (local accounting_address: felt) = accounting_token.read();
-    let (local token_address: felt) = liquidity_token.read();
-    let (local reward_address: felt) = reward_token.read();
 
-    let (local boolean: felt) = is_new_rewards_round();
-    if (boolean == TRUE) {
+    let (boolean: felt) = is_new_rewards_round();
+    if (boolean == 1) {
         _record_snapshot();
         tempvar syscall_ptr: felt* = syscall_ptr;
         tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
@@ -144,52 +140,93 @@ func distributeRewards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
         tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
     }
-    let (caller: felt) = get_caller_address();
-    let (totalDeposits: Uint256) = IAccountingToken.total_supply_at(
-        contract_address=accounting_address, last_snapshot_id_for_rewards
+    let (accounting_address: felt) = accounting_token.read();
+    let (last_id: Uint256) = last_snapshot_id_for_rewards.read();
+    let (total_deposits: Uint256) = IAccountingToken.total_supply_at(
+        contract_address=accounting_address, snapshot_id=last_id
     );
-    let (amountDeposited: Uint256) = IAccountingToken.balance_of_at(
-        contract_address=accounting_address,
-        account=caller,
-        snapshot_id=last_snapshot_id_for_rewards,
+    let (local caller: felt) = get_caller_address();
+    let (amount_deposited: Uint256) = IAccountingToken.balance_of_at(
+        contract_address=accounting_address, account=caller, snapshot_id=last_id
     );
-    let (res: felt) = uint256_lt(Uint256(0, 0), amountDeposited);
-    if (res == 1) {
-        if (uint256_lt(Uint256(0, 0), totalDeposits) == 1) {
-            let (product: Uint256, _) = uint256_mul(amountDeposited, Uint256(REWARDS, 0));
-            // rounded down
-            let (rewards: Uint256, _) = uint256_signed_div_rem(product, totalDeposits);
-            if (uint256_lt(Uint256(0, 0), rewards) == 1) {
-                if (_has_retrieved_reward(caller) == 0) {
-                    IRewardToken.mint(contract_address=reward_address, to=caller, amount=rewards);
-                    let (block_timestamp: felt) = get_block_timestamp();
+    let rewards: Uint256 = Uint256(0, 0);
+    let (product: Uint256, _) = uint256_mul(amount_deposited, Uint256(REWARDS, 0));
+    let (rewards_amount: Uint256, _) = uint256_signed_div_rem(product, total_deposits);
+
+    let reward_address: felt = reward_token.read();
+    let (block_timestamp: felt) = get_block_timestamp();
+    let (is_deposited_nz: felt) = uint256_lt(Uint256(0, 0), amount_deposited);
+    let (are_deposits_nz: felt) = uint256_lt(Uint256(0, 0), total_deposits);
+    let (are_rewards_nz: felt) = uint256_lt(Uint256(0, 0), rewards_amount);
+    let (has_retrieved: felt) = _has_retrieved_reward(caller);
+    if (is_deposited_nz == 1) {
+        if (are_deposits_nz == 1) {
+            if (are_rewards_nz == 1) {
+                if (has_retrieved == 0) {
+                    IRewardToken.mint(
+                        contract_address=reward_address, to=caller, amount=rewards_amount
+                    );
                     last_reward_timestamps.write(caller, block_timestamp);
+                } else {
+                    tempvar syscall_ptr: felt* = syscall_ptr;
+                    tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+                    tempvar range_check_ptr = range_check_ptr;
                 }
+            } else {
+                tempvar syscall_ptr: felt* = syscall_ptr;
+                tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+                tempvar range_check_ptr = range_check_ptr;
             }
+            return (rewards=rewards_amount);
+        } else {
+            tempvar syscall_ptr: felt* = syscall_ptr;
+            tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
         }
+    } else {
+        tempvar syscall_ptr: felt* = syscall_ptr;
+        tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
     }
-    return ();
+    return (rewards=Uint256(0, 0));
 }
 
 func _record_snapshot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    let (last_snapshot_id_for_rewards: Uint256) = IAccountingToken.snapshot(
-        contract_address=accounting_token.read()
+    alloc_locals;
+    let (accounting_address: felt) = accounting_token.read();
+    let (snapshot_id_supply: Uint256, snapshot_id_balance: Uint256) = IAccountingToken.snapshot(
+        contract_address=accounting_address
     );
-    last_recorded_snapshot_timestamp.write(get_block_timestamp());
-    round_number.write(round_number.read() + 1);
+    last_snapshot_id_for_rewards.write(snapshot_id_balance);
+    let (timestamp: felt) = get_block_timestamp();
+    last_recorded_snapshot_timestamp.write(timestamp);
+
+    let (local number: felt) = round_number.read();
+    local sum = number + 1;
+    round_number.write(sum);
     return ();
 }
 
 func _has_retrieved_reward{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     account: felt
 ) -> (bool: felt) {
-    if (is_le(last_recorded_snapshot_timestamp.read(), last_reward_timestamps.read(account)) == 1) {
-        if (is_le(last_reward_timestamps.read(account), last_recorded_snapshot_timestamp.read() + REWARDS_ROUND_MIN_DURATION) == 1) {
-            return TRUE;
+    let (last_reward) = last_reward_timestamps.read(account);
+    let (last_recorded) = last_recorded_snapshot_timestamp.read();
+
+    let res: felt = is_le(last_recorded, last_reward);
+    if (res == 1) {
+        tempvar syscall_ptr: felt* = syscall_ptr;
+        tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        let res2: felt = is_le(last_reward, last_recorded + REWARDS_ROUND_MIN_DURATION);
+        if (res2 == 1) {
+            tempvar syscall_ptr: felt* = syscall_ptr;
+            tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            return (bool=TRUE);
         }
-    } else {
-        return FALSE;
     }
+    return (bool=FALSE);
 }
 @view
 func is_new_rewards_round{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
@@ -197,9 +234,9 @@ func is_new_rewards_round{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
 ) {
     let (block_timestamp) = get_block_timestamp();
     let (lastRecorded: felt) = last_recorded_snapshot_timestamp.read();
-    if (is_le(lastRecorded + REWARDS_ROUND_MIN_DURATION, block_timestamp) == 1) {
-        return TRUE;
-    } else {
-        return FALSE;
+    let res: felt = is_le(lastRecorded + REWARDS_ROUND_MIN_DURATION, block_timestamp);
+    if (res == 1) {
+        return (bool=TRUE);
     }
+    return (bool=FALSE);
 }

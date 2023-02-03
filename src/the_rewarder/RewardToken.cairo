@@ -20,7 +20,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     Ownable.initializer(caller);
     ERC20.initializer(NAME, SYMBOL, DECIMALS);
     AccessControl.initializer();
-    AccessControl.grant_role(MINTER_ROLE, caller);
+    AccessControl._grant_role(MINTER_ROLE, caller);
     return ();
 }
 

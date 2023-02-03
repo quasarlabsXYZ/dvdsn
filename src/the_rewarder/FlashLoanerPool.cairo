@@ -22,6 +22,8 @@ from starkware.cairo.common.math_cmp import is_le
 
 from starkware.cairo.common.bool import TRUE, FALSE
 
+from openzeppelin.security.reentrancyguard.library import ReentrancyGuard
+
 from src.the_rewarder.interfaces.IAccountingToken import IAccountingToken
 from src.the_rewarder.interfaces.IRewardToken import IRewardToken
 from src.the_rewarder.interfaces.IERC20 import IERC20
@@ -49,31 +51,39 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 
 @external
 func flashLoan{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(amount: Uint256) {
+    ReentrancyGuard.start();
     let (this: felt) = get_contract_address();
-    let (balance_before: Uint256) = IERC20.balanceOf(contract_address=liquidityToken.read(), this);
+    let token_address: felt = liquidityToken.read();
+
+    let (balance_before: Uint256) = IERC20.balanceOf(contract_address=token_address, account=this);
     with_attr error_message("NotEnoughTokenBalance") {
         assert_uint256_lt(balance_before, amount);
     }
-    let (caller: felt) = get_caller_address();
-    IERC20.transfer(contract_address=liquidityToken.read(), caller, amount);
+    let caller: felt = get_caller_address();
+    IERC20.transfer(contract_address=token_address, recipient=caller, amount=amount);
     // selector is get_selector_from_name("receiveFlashLoan")
-    let (receiver_call: Call) = Call(
-        to=caller,
-        selector=147888053196246221552724878847108733894168897053278161494098725433913990908,
-        calldata_len=2,
-        calldata=amount,
-    );
     let res = call_contract(
-        contract_address=receiver_call.to,
-        function_selector=receiver_call.selector,
-        calldata_size=receiver_call.calldata_len,
-        calldata=receiver_call.calldata,
+        contract_address=caller,
+        function_selector=147888053196246221552724878847108733894168897053278161494098725433913990908,
+        calldata_size=2,
+        calldata=cast(new (amount.low, amount.high), felt*),
     );
 
-    let (balance_after: Uint256) = IERC20.balanceOf(contract_address=liquidityToken.read(), this);
-    if (uint256_lt(balance_after, balance_before) == 1) {
+    let (balance_after: Uint256) = IERC20.balanceOf(contract_address=token_address, account=this);
+
+    let (balance_dif: felt) = uint256_lt(balance_after, balance_before);
+    if (balance_dif == 1) {
         with_attr error_message("NotEnoughTokenBalance") {
             assert 1 = 0;
         }
+        tempvar syscall_ptr: felt* = syscall_ptr;
+        tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+    } else {
+        tempvar syscall_ptr: felt* = syscall_ptr;
+        tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
     }
+    ReentrancyGuard.end();
+    return ();
 }

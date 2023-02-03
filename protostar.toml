@@ -7,3 +7,9 @@ cairo-path = [
 
 [contracts]
 DVT = ["src/damn_valuable_token.cairo"]
+ERC20Snapshot = ["src/extensions/ERC20Snapshot.cairo"]
+
+AccountingToken =["src/the_rewarder/AccountingToken.cairo"]
+FlashLoanerPool =["src/the_rewarder/FlashLoanerPool.cairo"]
+RewardToken =["src/the_rewarder/RewardToken.cairo"]
+TheRewarderPool =["src/the_rewarder/TheRewarderPool.cairo"]
