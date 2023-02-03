@@ -28,7 +28,7 @@ from src.the_rewarder.interfaces.IRewardToken import IRewardToken
 from src.the_rewarder.interfaces.IERC20 import IERC20
 
 const REWARDS_ROUND_MIN_DURATION = 5 * 24 * 60 * 60;
-const REWARDS = 100 * 10 ** 18;
+const REWARDS = 100;
 
 const NAME = 'rToken';
 const SYMBOL = 'rTKN';
@@ -66,7 +66,6 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     _liquidity_token: felt, accounting_class_hash: felt, reward_class_hash: felt
 ) {
     liquidity_token.write(_liquidity_token);
-    let (ctor_calldata) = alloc();
     let (accounting_address: felt) = deploy(
         class_hash=accounting_class_hash,
         contract_address_salt=0,
@@ -75,12 +74,12 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         deploy_from_zero=FALSE,
     );
     accounting_token.write(accounting_address);
-
+    let (empty_calldata) = alloc();
     let (reward_address: felt) = deploy(
         class_hash=reward_class_hash,
         contract_address_salt=1,
         constructor_calldata_size=0,
-        constructor_calldata=ctor_calldata,
+        constructor_calldata=empty_calldata,
         deploy_from_zero=FALSE,
     );
     reward_token.write(reward_address);
@@ -198,13 +197,12 @@ func _record_snapshot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     let (snapshot_id_supply: Uint256, snapshot_id_balance: Uint256) = IAccountingToken.snapshot(
         contract_address=accounting_address
     );
-    // supply: Uint256, balance: Uint256
     last_snapshot_id_for_rewards.write(snapshot_id_balance);
     let (timestamp: felt) = get_block_timestamp();
     last_recorded_snapshot_timestamp.write(timestamp);
 
-    let (local sum: felt) = round_number.read();
-    sum = sum + 1;
+    let (local number: felt) = round_number.read();
+    local sum = number + 1;
     round_number.write(sum);
     return ();
 }

@@ -14,4 +14,8 @@ namespace IAccountingToken {
     }
     func balance_of_at(account: felt, snapshot_id: Uint256) -> (value: Uint256) {
     }
+    func has_role(role: felt, user: felt) -> (has_role: felt) {
+    }
+    func balance_of(account: felt) -> (balance: Uint256) {
+    }
 }

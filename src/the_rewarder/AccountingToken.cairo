@@ -9,32 +9,30 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from openzeppelin.token.erc20.library import ERC20, ERC20_name, ERC20_decimals, ERC20_symbol
 from openzeppelin.access.accesscontrol.library import AccessControl
 from openzeppelin.access.ownable.library import Ownable
-from openzeppelin.utils.constants.library import UINT8_MAX
 from openzeppelin.security.safemath.library import SafeUint256
 
 from src.extensions.ERC20Snapshot import ERC20Snapshot
 
-const MINTER_ROLE = 0;
-const SNAPSHOT_ROLE = 1;
-const BURNER_ROLE = 2;
+const MINTER_ROLE = 1;
+const SNAPSHOT_ROLE = 2;
+const BURNER_ROLE = 3;
+const ADMIN_ROLE = 0;
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     name: felt, symbol: felt, decimals: felt
 ) {
     alloc_locals;
-    let (local caller: felt) = get_caller_address();
     ERC20_name.write(name);
     ERC20_symbol.write(symbol);
-    with_attr error_message("ERC20: decimals exceed 2^8") {
-        assert_le(decimals, UINT8_MAX);
-    }
+    let (caller: felt) = get_caller_address();
     ERC20_decimals.write(decimals);
     Ownable.initializer(caller);
     AccessControl.initializer();
-    AccessControl.grant_role(MINTER_ROLE, caller);
-    AccessControl.grant_role(SNAPSHOT_ROLE, caller);
-    AccessControl.grant_role(BURNER_ROLE, caller);
+    AccessControl._grant_role(ADMIN_ROLE, caller);
+    AccessControl._grant_role(MINTER_ROLE, caller);
+    AccessControl._grant_role(SNAPSHOT_ROLE, caller);
+    AccessControl._grant_role(BURNER_ROLE, caller);
     return ();
 }
 
