@@ -6,4 +6,8 @@ cairo-path = [
 ]
 
 [contracts]
+DVNFT = ["src/damn_valuable_erc721.cairo"]
 DVT = ["src/damn_valuable_token.cairo"]
+
+NAIVE_RECEIVER_LENDER_POOL = ["src/naive_receiver/naive_receiver_lender_pool.cairo"]
+FLASH_LOAN_RECEIVER = ["src/naive_receiver/flash_loan_receiver.cairo"]
