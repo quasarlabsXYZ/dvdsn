@@ -6,4 +6,10 @@ cairo-path = [
 ]
 
 [contracts]
-DVT = ["src/damn_valuable_token.cairo"]
+selfie_pool = ["src/selfie/SelfiePool.cairo"]
+simple_governance = ["src/selfie/SimpleGovernance.cairo"]
+
+
+
+[test]
+disable-hint-validation = true
