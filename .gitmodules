@@ -4,3 +4,6 @@
 [submodule "JediSwap"]
 	path = lib/JediSwap
 	url = https://github.com/jediswaplabs/JediSwap.git
+[submodule "JediSwap_git"]
+	path = lib/JediSwap_git
+	url = https://github.com/jediswaplabs/JediSwap.git
