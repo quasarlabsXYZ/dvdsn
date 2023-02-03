@@ -13,9 +13,13 @@
 
 ## Challenges
 
-| #    | Name                               |
-| :--- | :--------------------------------- |
-| 1    | [Placeholder](docs/Placeholder.md) |
+| #    | Name                                    |
+| :--- | :-------------------------------------- |
+| 1    | [Unstoppable](docs/Unstoppable.md)      |
+| 2    | [Naive Receiver](docs/NaiveReceiver.md) |
+| 3    | [Truster](docs/Truster.md)              |
+| 4    | [Side Entrance](docs/SideEntrance.md)   |
+| 5    | [Logic Delegate](docs/LogicDelegate.md) |
 
 ## Hacking
 
