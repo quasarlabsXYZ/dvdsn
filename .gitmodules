@@ -1,3 +1,6 @@
 [submodule "cairo_contracts"]
 	path = lib/cairo_contracts
 	url = https://github.com/OpenZeppelin/cairo-contracts
+[submodule "JediSwap_git"]
+	path = lib/JediSwap_git
+	url = https://github.com/jediswaplabs/JediSwap.git
