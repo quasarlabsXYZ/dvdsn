@@ -6,10 +6,12 @@ cairo-path = [
 ]
 
 [contracts]
-DVT = ["src/damn_valuable_token.cairo"]
-receiver_unstoppable = ["src/unstoppable/receiver_unstoppable.cairo"]
-unstoppable_lender = ["src/unstoppable/unstoppable_lender.cairo"]
-truster = ["src/truster/truster_lender_pool.cairo"]
+DVT = ["src/DamnValuableToken.cairo"]
+receiver_unstoppable = ["src/unstoppable/ReceiverUnstoppable.cairo"]
+unstoppable_lender = ["src/unstoppable/UnstoppableLender.cairo"]
+truster = ["src/truster/TrusterLenderPool.cairo"]
+puppet = ["src/puppet/PuppetPool.cairo"]
+uniswap_like = ["src/puppet/UniswapPairLike.cairo"]
 
 [test]
 disable-hint-validation = true
