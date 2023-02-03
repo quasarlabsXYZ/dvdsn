@@ -7,3 +7,6 @@
 [submodule "JediSwap_git"]
 	path = lib/JediSwap_git
 	url = https://github.com/jediswaplabs/JediSwap.git
+[submodule "ERC3156_starknet"]
+	path = lib/ERC3156_starknet
+	url = https://github.com/0xAurelou/ERC3156-starknet
