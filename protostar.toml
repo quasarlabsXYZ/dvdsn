@@ -2,7 +2,8 @@
 protostar-version = "0.9.1"
 lib-path = "lib"
 cairo-path = [
-    "./lib/cairo_contracts/src"
+    "./utils",
+    "./lib/cairo_contracts/src",
 ]
 
 [contracts]
@@ -11,3 +12,10 @@ DVT = ["src/damn_valuable_token.cairo"]
 
 NAIVE_RECEIVER_LENDER_POOL = ["src/naive_receiver/naive_receiver_lender_pool.cairo"]
 FLASH_LOAN_RECEIVER = ["src/naive_receiver/flash_loan_receiver.cairo"]
+
+SIMPLE_FLASH_LENDER=["utils/SimpleFlashLender.cairo"]
+SIMPLE_FLASH_BORROWER=["utils/SimpleFlashBorrower.cairo"]
+
+
+[test]
+disable-hint-validation = true
