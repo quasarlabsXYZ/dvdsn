@@ -2,7 +2,11 @@
 protostar-version = "0.9.1"
 lib-path = "lib"
 cairo-path = [
-    "./lib/cairo_contracts/src"
+    "./lib/cairo_contracts/src",
+
+
+    "./lib/JediSwap",
+    "./lib"
 ]
 
 [contracts]
@@ -11,7 +15,6 @@ receiver_unstoppable = ["src/unstoppable/ReceiverUnstoppable.cairo"]
 unstoppable_lender = ["src/unstoppable/UnstoppableLender.cairo"]
 truster = ["src/truster/TrusterLenderPool.cairo"]
 puppet = ["src/puppet/PuppetPool.cairo"]
-uniswap_like = ["src/puppet/UniswapPairLike.cairo"]
 
 [test]
 disable-hint-validation = true
