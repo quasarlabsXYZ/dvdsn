@@ -8,10 +8,10 @@ namespace IAccountingToken {
     }
     func burn(_from: felt, amount: Uint256) {
     }
-    func snapshot() -> (value: Uint256) {
+    func snapshot() -> (supply: Uint256, balance: Uint256) {
     }
-    func totalSupplyAt(snapshotId: Uint256) -> (totalSupply: Uint256) {
+    func total_supply_at(snapshot_id: Uint256) -> (total_supply: Uint256) {
     }
-    func balanceOfAt(account: felt, snapshotId: Uint256) -> (value: Uint256) {
+    func balance_of_at(account: felt, snapshot_id: Uint256) -> (value: Uint256) {
     }
 }
