@@ -24,17 +24,6 @@ from openzeppelin.access.ownable.library import Ownable
 // *                                   Storage                                   * //
 // * -------------------------------------------------------------------------- * //
 
-struct Snapshots {
-    ids_len: felt,
-    ids: Uint256*,
-    values_len: felt,
-    values: Uint256*,
-}
-
-@storage_var
-func ids(index: felt) -> (value: felt) {
-}
-
 @storage_var
 func _account_balance_snapshots(snapshot_id: Uint256, address: felt) -> (balance: Uint256) {
 }
@@ -163,22 +152,22 @@ namespace ERC20Snapshot {
         return (value=val);
     }
 
-    func transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        recipient: felt, amount: Uint256
-    ) -> (success: felt) {
-        let (caller: felt) = get_caller_address();
-        _update_account_snapshot(caller);
-        _update_account_snapshot(recipient);
-        return ERC20.transfer(recipient, amount);
-    }
+    // func transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    //     recipient: felt, amount: Uint256
+    // ) -> (success: felt) {
+    //     let (caller: felt) = get_caller_address();
+    //     _update_account_snapshot(caller);
+    //     _update_account_snapshot(recipient);
+    //     return ERC20.transfer(recipient, amount);
+    // }
 
-    func transfer_from{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        sender: felt, recipient: felt, amount: Uint256
-    ) -> (success: felt) {
-        _update_account_snapshot(sender);
-        _update_account_snapshot(recipient);
-        return ERC20.transfer_from(sender, recipient, amount);
-    }
+    // func transfer_from{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    //     sender: felt, recipient: felt, amount: Uint256
+    // ) -> (success: felt) {
+    //     _update_account_snapshot(sender);
+    //     _update_account_snapshot(recipient);
+    //     return ERC20.transfer_from(sender, recipient, amount);
+    // }
 
     func _mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         to: felt, amount: Uint256
@@ -214,7 +203,6 @@ namespace ERC20Snapshot {
         account: felt
     ) {
         alloc_locals;
-        // local syscall_ptr: felt* = syscall_ptr;
 
         let (current_id: Uint256) = _get_current_balance_snapshot_id();
         let (last_id: Uint256) = _get_last_balance_snapshot_id();
@@ -240,7 +228,6 @@ namespace ERC20Snapshot {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }() {
         alloc_locals;
-        // local syscall_ptr: felt* = syscall_ptr;
 
         let (current_id: Uint256) = _get_current_balance_snapshot_id();
         let (last_id: Uint256) = _get_last_total_supply_snapshot_id();
