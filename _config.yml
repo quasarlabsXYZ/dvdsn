@@ -1,0 +1,20 @@
+title: DVDSN
+description: Damn Vulnerable DeFi Starknet
+show_downloads: false
+remote_theme: pages-themes/hacker@v0.2.0
+plugins:
+  - jekyll-remote-theme
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+include:
+  - CONTRIBUTING.md
+  - README.md
+  - LICENSE.md
+  - COPYING.md
+  - CODE_OF_CONDUCT.md
+  - CONTRIBUTING.md
+  - ISSUE_TEMPLATE.md
+  - PULL_REQUEST_TEMPLATE.md
