@@ -10,7 +10,6 @@
 
 ## Note
 - **DVDSN is a project starts at the TVL Hackers Building (Feb 2023) and still under active development, any contribution is welcomed!**
-- **Please feel free to reach out to [@dcfpascal](https://t.me/dcfpascal) or [@kootsZhin](https://t.me/kootsZhin) on Telegram if you have any question.**
 
 ## Challenges
 
@@ -37,9 +36,7 @@ PRs are welcomed!
 
 ## Reference
 
-1. [Damn Vulnerable DeFi](https://www.damnvulnerabledefi.xyz/)
-2. [Amarna: Static analysis for Cairo programs](https://blog.trailofbits.com/2022/04/20/amarna-static-analysis-for-cairo-programs/)
-3. [How to hack (almost) any Starknet Cairo smart contract](https://medium.com/ginger-security/how-to-hack-almost-any-starknet-cairo-smart-contract-67b4681ac0f6)
+Credit to [Damn Vulnerable DeFi](https://www.damnvulnerabledefi.xyz/)
 
 ## License
 
