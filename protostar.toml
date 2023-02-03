@@ -8,5 +8,12 @@ cairo-path = [
 [contracts]
 DVT = ["src/DamnValuableToken.cairo"]
 
-NAIVE_RECEIVER_LENDER_POOL = ["src/naive_receiver/NaiveReceiverLenderPool.cairo"]
-FLASH_LOAN_RECEIVER = ["src/naive_receiver/FlashLoanReceiver.cairo"]
+naive_receiver_lender_pool = ["src/naive_receiver/NaiveReceiverLenderPool.cairo"]
+flash_loan_receiver = ["src/naive_receiver/FlashLoanReceiver.cairo"]
+receiver_unstoppable = ["src/unstoppable/ReceiverUnstoppable.cairo"]
+unstoppable_lender = ["src/unstoppable/UnstoppableLender.cairo"]
+truster = ["src/truster/TrusterLenderPool.cairo"]
+logic_delegate = ["src/logic_delegate/LogicDelegate.cairo"]
+
+[test]
+disable-hint-validation = true
