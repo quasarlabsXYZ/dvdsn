@@ -11,18 +11,14 @@ a {
   color: #b5e853;
 }
 
-a:link {
+a:link, a:visited {
   text-decoration: none;
 }
 
-a:visited {
-  text-decoration: none;
-}
-
-a:hover {
+a:hover, a:active {
   text-decoration: underline;
 }
 
-a:active {
-  text-decoration: underline;
+#readme-title, #readme-description {
+  display: none;
 }
