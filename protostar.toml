@@ -7,7 +7,12 @@ cairo-path = [
 
 [contracts]
 DVT = ["src/DamnValuableToken.cairo"]
+ERC20Snapshot = ["src/extensions/ERC20Snapshot.cairo"]
 
+AccountingToken =["src/the_rewarder/AccountingToken.cairo"]
+FlashLoanerPool =["src/the_rewarder/FlashLoanerPool.cairo"]
+RewardToken =["src/the_rewarder/RewardToken.cairo"]
+TheRewarderPool =["src/the_rewarder/TheRewarderPool.cairo"]
 naive_receiver_lender_pool = ["src/naive_receiver/NaiveReceiverLenderPool.cairo"]
 flash_loan_receiver = ["src/naive_receiver/FlashLoanReceiver.cairo"]
 receiver_unstoppable = ["src/unstoppable/ReceiverUnstoppable.cairo"]
