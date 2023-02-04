@@ -10,5 +10,5 @@ To pass the challenge, beat the winning checks in the contract.
 2. how is array look like in cairo
 3. is the delegate too fancy?
 
-- [See the contracts](../src/logic_delegate/)
-- [Complete the challenge](../tests/logic_delegate/)
+- [See the contracts](https://github.com/quasarlabsXYZ/dvdsn/tree/main/src/logic_delegate/)
+- [Complete the challenge](https://github.com/quasarlabsXYZ/dvdsn/tree/main/tests/logic_delegate)

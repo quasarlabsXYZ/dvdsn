@@ -12,5 +12,5 @@ The developer of the project doesn't seem very experienced.
 
 By the way, rumours say a new pool has just launched. Isn’t it offering flash loans of DVT tokens?
 
-- [See the contracts](../src/the_rewarder/)
-- [Complete the challenge](../tests/the_rewarder/)
+- [See the contracts](https://github.com/quasarlabsXYZ/dvdsn/tree/main/src/the_rewarder/)
+- [Complete the challenge](https://github.com/quasarlabsXYZ/dvdsn/tree/main/tests/the_rewarder/)

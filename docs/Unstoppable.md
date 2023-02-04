@@ -8,5 +8,5 @@ To pass the challenge, make the vault stop offering flash loans.
 
 You start with 10 DVT tokens in balance.
 
-- [See the contracts](../src/unstoppable/)
-- [Complete the challenge](../tests/unstoppable/)
+- [See the contracts](https://github.com/quasarlabsXYZ/dvdsn/tree/maing/src/unstoppable/)
+- [Complete the challenge](https://github.com/quasarlabsXYZ/dvdsn/tree/maing/tests/unstoppable/)

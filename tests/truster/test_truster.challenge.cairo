@@ -69,8 +69,7 @@ func test_hack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     assert [calldata + 1] = initial_supply.low;
     assert [calldata + 2] = initial_supply.high;
 
-    let approve_selector = 949021990203918389843157787496164629863144228991510976554585288817234167820
-        ;  // get_selector_from_name("approve")
+    let approve_selector = 949021990203918389843157787496164629863144228991510976554585288817234167820;  // get_selector_from_name("approve")
 
     %{ start_prank(ids.attacker, target_contract_address=ids.TRUSTER_POOL) %}
     let (success: felt) = ITrusterLenderPool.flashLoan(
