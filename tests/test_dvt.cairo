@@ -1,38 +1,29 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import (Uint256, uint256_eq)
+from starkware.cairo.common.uint256 import Uint256, uint256_eq
 
 from openzeppelin.token.erc20.IERC20 import IERC20
 
-from src.damn_valuable_token import (
-    NAME,
-    SYMBOL,
-    DECIMALS,
-    INITIAL_SUPPLY
-)
+from src.DamnValuableToken import NAME, SYMBOL, DECIMALS, INITIAL_SUPPLY
 
 @view
-func __setup__{
-    syscall_ptr: felt*, range_check_ptr
-}() {
+func __setup__{syscall_ptr: felt*, range_check_ptr}() {
     alloc_locals;
 
     local DVT: felt;
-    local admin = 'starknet-admin';
+    local deployer = 'starknet-deployer';
 
     %{
-        context.DVT = deploy_contract("src/damn_valuable_token.cairo", [ids.admin]).contract_address
-        context.admin = ids.admin
+        context.DVT = deploy_contract("src/DamnValuableToken.cairo", [ids.deployer]).contract_address
+        context.deployer = ids.deployer
     %}
 
     return ();
 }
 
 @external
-func test_name{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_name{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     local DVT: felt;
 
@@ -45,9 +36,7 @@ func test_name{
 }
 
 @external
-func test_symbol{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_symbol{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     local DVT: felt;
 
@@ -60,9 +49,7 @@ func test_symbol{
 }
 
 @external
-func test_decimals{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_decimals{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     local DVT: felt;
 
@@ -75,21 +62,19 @@ func test_decimals{
 }
 
 @external
-func test_token_holdings{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_token_holdings{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
 
     local DVT: felt;
-    local admin: felt;
+    local deployer: felt;
 
     %{
         ids.DVT = context.DVT
-        ids.admin = context.admin
+        ids.deployer = context.deployer
     %}
 
-    let (admin_holding) = IERC20.balanceOf(DVT, admin);
-    let (res) = uint256_eq(admin_holding, Uint256(INITIAL_SUPPLY, 0));
+    let (deployer_holding) = IERC20.balanceOf(DVT, deployer);
+    let (res) = uint256_eq(deployer_holding, Uint256(INITIAL_SUPPLY, 0));
 
     assert res = 1;
 
@@ -97,27 +82,25 @@ func test_token_holdings{
 }
 
 @external
-func test_transfer{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test_transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
 
     local DVT: felt;
-    local admin: felt;
+    local deployer: felt;
     local alice = 'alice';
     local transfer_amt = 100;
 
     %{
         ids.DVT = context.DVT
-        ids.admin = context.admin
+        ids.deployer = context.deployer
     %}
 
-    %{ stop_prank_callable = start_prank(ids.admin, target_contract_address=ids.DVT) %}
+    %{ stop_prank_callable = start_prank(ids.deployer, target_contract_address=ids.DVT) %}
     IERC20.transfer(DVT, alice, Uint256(transfer_amt, 0));
     %{ stop_prank_callable() %}
 
-    let (admin_holding) = IERC20.balanceOf(DVT, admin);
-    let (res) = uint256_eq(admin_holding, Uint256(INITIAL_SUPPLY - transfer_amt, 0));
+    let (deployer_holding) = IERC20.balanceOf(DVT, deployer);
+    let (res) = uint256_eq(deployer_holding, Uint256(INITIAL_SUPPLY - transfer_amt, 0));
     assert res = 1;
 
     let (alice_holding) = IERC20.balanceOf(DVT, alice);

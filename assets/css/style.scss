@@ -1,0 +1,44 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+h1, h2, h3, h4, a {
+  font-weight: bold;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+header h1:before {
+  content: "";
+}
+
+footer {
+  background: rgba(0, 0, 0, 0.1);
+  width: 100%;
+  border-top: 1px dashed $conifer; //header;
+  padding: 20px 0;
+  margin: 0 0 40px 0;
+}
+
+footer h2 {
+  font-size: 18px;
+  font-weight: 300;
+  color: #666;
+}
+
+a {
+  color: #b5e853;
+}
+
+a:link, a:visited {
+  text-decoration: none;
+}
+
+a:hover, a:active {
+  text-decoration: underline;
+}
+
+#readme-title, #readme-description {
+  display: none;
+}
