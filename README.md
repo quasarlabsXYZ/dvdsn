@@ -9,7 +9,7 @@
 </h4>
 
 ## Note
-- **DVDSN is a project starts at the TVL Hackers Building (Feb 2023) and still under active development, any contribution is welcomed!**
+- **DVDSN is a project started at the TVL Hackers Building (Feb 2023) and still under active development, any contribution welcome!**
 
 ## Challenges
 
