@@ -8,5 +8,5 @@ To pass the challenge, make the vault stop offering flash loans.
 
 You start with 10 DVT tokens in balance.
 
-- [See the contracts](../src/naive_receiver/)
-- [Complete the challenge](../tests/naive_receiver/)
+- [See the contracts](https://github.com/quasarlabsXYZ/dvdsn/tree/main/src/naive_receiver/)
+- [Complete the challenge](https://github.com/quasarlabsXYZ/dvdsn/tree/main/tests/naive_receiver/)

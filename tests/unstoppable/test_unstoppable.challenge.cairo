@@ -110,8 +110,7 @@ func test_hack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     // * -------------------------------- Checking -------------------------------- * //
 
-    // It should be no longer possible to execute flash loans
-    %{ expect_revert() %}
+    %{ expect_revert(error_message="assert_uint256_eq failed") %}
     IReceiverUnstoppable.executeFlashLoan(RECEIVER_UNSTOPPABLE, borrow_amount);
 
     %{ print("Unstoppable: Challenge Completed! ✨") %}
