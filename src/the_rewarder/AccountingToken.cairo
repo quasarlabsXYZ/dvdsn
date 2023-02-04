@@ -52,8 +52,8 @@ func total_supply_at{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 func balance_of_at{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     account: felt, snapshot_id: Uint256
 ) -> (value: Uint256) {
-    let (value: Uint256) = ERC20Snapshot.balance_of_at(account, snapshot_id);
-    return (value=value);
+    let (val: Uint256) = ERC20Snapshot.balance_of_at(account, snapshot_id);
+    return (value=val);
 }
 
 @external

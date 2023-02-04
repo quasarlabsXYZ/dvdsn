@@ -40,6 +40,22 @@ func _total_supply_snapshots(snapshot_id: Uint256) -> (total_supply: Uint256) {
 func _total_supply_last_snapshot_id() -> (id: Uint256) {
 }
 
+// @storage_var
+// func balance_ids(counter: felt) -> (id: felt) {
+// }
+
+// @storage_var
+// func balance_ids_counter() -> (counter: felt) {
+// }
+
+// @storage_var
+// func supply_ids(counter: felt) -> (id: felt) {
+// }
+
+// @storage_var
+// func supply_ids_counter() -> (counter: felt) {
+// }
+
 @event
 func SnapshotBalance(id: Uint256) {
 }
@@ -125,13 +141,16 @@ namespace ERC20Snapshot {
         with_attr error_message("ERC20Snapshot: id is 0") {
             assert_uint256_lt(Uint256(0, 0), snapshot_id);
         }
-        let (current: Uint256) = _get_current_balance_snapshot_id();
+
+        // let (current: Uint256) = _get_current_balance_snapshot_id();
+        let (current: Uint256) = _get_last_balance_snapshot_id();
 
         with_attr error_message("ERC20Snapshot: nonexistent id") {
             assert_uint256_le(snapshot_id, current);
         }
+        let (val: Uint256) = _account_balance_snapshots.read(current, account);
 
-        let (val: Uint256) = _account_balance_snapshots.read(snapshot_id, account);
+        // let (val: Uint256) = _account_balance_snapshots.read(snapshot_id, account);
 
         return (value=val);
     }
@@ -142,32 +161,16 @@ namespace ERC20Snapshot {
         with_attr error_message("ERC20Snapshot: id is 0") {
             assert_uint256_lt(Uint256(0, 0), snapshot_id);
         }
+        // let (current: Uint256) = _get_current_supply_snapshot_id();
         let (current: Uint256) = _get_current_supply_snapshot_id();
         with_attr error_message("ERC20Snapshot: nonexistent id") {
             assert_uint256_le(snapshot_id, current);
         }
 
-        let (val: Uint256) = _total_supply_snapshots.read(snapshot_id);
+        let (val: Uint256) = _total_supply_snapshots.read(current);
 
         return (value=val);
     }
-
-    // func transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    //     recipient: felt, amount: Uint256
-    // ) -> (success: felt) {
-    //     let (caller: felt) = get_caller_address();
-    //     _update_account_snapshot(caller);
-    //     _update_account_snapshot(recipient);
-    //     return ERC20.transfer(recipient, amount);
-    // }
-
-    // func transfer_from{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    //     sender: felt, recipient: felt, amount: Uint256
-    // ) -> (success: felt) {
-    //     _update_account_snapshot(sender);
-    //     _update_account_snapshot(recipient);
-    //     return ERC20.transfer_from(sender, recipient, amount);
-    // }
 
     func _mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         to: felt, amount: Uint256

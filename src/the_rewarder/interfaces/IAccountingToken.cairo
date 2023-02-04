@@ -18,4 +18,6 @@ namespace IAccountingToken {
     }
     func balance_of(account: felt) -> (balance: Uint256) {
     }
+    func total_supply() -> (supply: Uint256) {
+    }
 }
