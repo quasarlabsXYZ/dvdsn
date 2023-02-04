@@ -15,11 +15,12 @@ const DECIMALS = 18;
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    let (caller: felt) = get_caller_address();
+    alloc_locals;
+    let (local caller: felt) = get_caller_address();
     Ownable.initializer(caller);
     ERC20.initializer(NAME, SYMBOL, DECIMALS);
     AccessControl.initializer();
-    AccessControl.grant_role(MINTER_ROLE, caller);
+    AccessControl._grant_role(MINTER_ROLE, caller);
     return ();
 }
 
@@ -94,7 +95,8 @@ func mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     to: felt, amount: Uint256
 ) {
     AccessControl.assert_only_role(MINTER_ROLE);
-    ERC20Snapshot.mint(to, amount);
+    ERC20._mint(to, amount);
+    return ();
 }
 
 @external

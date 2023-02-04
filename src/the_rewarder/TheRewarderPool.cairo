@@ -6,10 +6,15 @@ from starkware.cairo.common.uint256 import (
     uint256_check,
     uint256_eq,
     uint256_signed_div_rem,
+    uint256_lt,
+    uint256_mul,
 )
+
+from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (
     get_caller_address,
     get_block_timestamp,
+    get_block_number,
     deploy,
     get_contract_address,
 )
@@ -23,46 +28,46 @@ from src.the_rewarder.interfaces.IAccountingToken import IAccountingToken
 from src.the_rewarder.interfaces.IRewardToken import IRewardToken
 from src.the_rewarder.interfaces.IERC20 import IERC20
 
-const REWARDS_ROUND_MIN_DURATION = 5 * 24 * 60 * 60;
-const REWARDS = 100 * 10 ** 18;
+// in blocks
+const REWARDS_ROUND_MIN_DURATION = 100;
+const REWARDS = 100;
 
 const NAME = 'rToken';
 const SYMBOL = 'rTKN';
 
 @storage_var
-func liquidityToken() -> (address: felt) {
+func liquidity_token() -> (address: felt) {
 }
 
 @storage_var
-func accountingToken() -> (address: felt) {
+func accounting_token() -> (address: felt) {
 }
 
 @storage_var
-func rewardToken() -> (address: felt) {
+func reward_token() -> (address: felt) {
 }
 
 @storage_var
-func lastSnapshotIdForRewards() -> (value: felt) {
+func last_snapshot_id_for_rewards() -> (value: (Uint256, Uint256)) {
 }
 
 @storage_var
-func lastRecordedSnapshotTimestamp() -> (value: felt) {
+func last_recorded_snapshot_timestamp() -> (value: felt) {
 }
 
 @storage_var
-func roundNumber() -> (value: felt) {
+func round_number() -> (value: felt) {
 }
 
 @storage_var
-func lastRewardTimestamps(address: felt) -> (timestamp: felt) {
+func last_reward_timestamps(address: felt) -> (timestamp: felt) {
 }
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _liquidityToken: felt, accounting_class_hash: felt, reward_class_hash: felt
+    _liquidity_token: felt, accounting_class_hash: felt, reward_class_hash: felt
 ) {
-    liquidityToken.write(_liquidityToken);
-
+    liquidity_token.write(_liquidity_token);
     let (accounting_address: felt) = deploy(
         class_hash=accounting_class_hash,
         contract_address_salt=0,
@@ -70,103 +75,175 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         constructor_calldata=cast(new (NAME, SYMBOL, 18), felt*),
         deploy_from_zero=FALSE,
     );
-    accountingToken.write(accounting_address);
-
+    accounting_token.write(accounting_address);
+    let (empty_calldata) = alloc();
     let (reward_address: felt) = deploy(
         class_hash=reward_class_hash,
         contract_address_salt=1,
         constructor_calldata_size=0,
-        constructor_calldata=0,
+        constructor_calldata=empty_calldata,
         deploy_from_zero=FALSE,
     );
-    rewardToken.write(reward_address);
+    reward_token.write(reward_address);
 
-    _recordSnapshot();
+    _record_snapshot();
 
     return ();
 }
 
 @external
 func deposit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(amount: Uint256) {
-    if (uint256_eq(amount, Uint256(0, 0)) == 1) {
+    alloc_locals;
+    let (local res: felt) = uint256_eq(amount, Uint256(0, 0));
+    if (res == 1) {
         with_attr error_message("InvalidDepositAmount") {
             assert 1 = 0;
         }
     }
-    let (caller: felt) = get_caller_address();
+    let (local caller: felt) = get_caller_address();
+    let (local accounting_address: felt) = accounting_token.read();
 
-    IAccountingToken.mint(contract_address=accountingToken.read(), caller, amount);
-    distributeRewards();
-    let (this: felt) = get_contract_address();
-    IERC20.transferFrom(contract_address=liquidityToken.read(), caller, this, amount);
+    IAccountingToken.mint(contract_address=accounting_address, to=caller, amount=amount);
+    // distributeRewards();
+    let (local this: felt) = get_contract_address();
+    let (local token_address: felt) = liquidity_token.read();
+    IERC20.transferFrom(
+        contract_address=token_address, sender=caller, recipient=this, amount=amount
+    );
+    return ();
 }
 
 @external
 func withdraw{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(amount: Uint256) {
-    let (caller: felt) = get_caller_address();
-    IAccountingToken.burn(contract_address=accountingToken.read(), caller, amount);
-    IERC20.transfer(contract_address=liquidityToken.read(), caller, amount);
+    alloc_locals;
+    let (local caller: felt) = get_caller_address();
+    let (local accounting_address: felt) = accounting_token.read();
+    let (local token_address: felt) = liquidity_token.read();
+
+    IAccountingToken.burn(contract_address=accounting_address, _from=caller, amount=amount);
+    IERC20.transfer(contract_address=token_address, recipient=caller, amount=amount);
+    return ();
 }
 
 @external
 func distributeRewards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     rewards: Uint256
 ) {
-    if (isNewRewardsRound() == TRUE) {
-        _recordSnapshot();
+    alloc_locals;
+
+    let (boolean: felt) = is_new_rewards_round();
+    if (boolean == 1) {
+        _record_snapshot();
+        tempvar syscall_ptr: felt* = syscall_ptr;
+        tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+    } else {
+        tempvar syscall_ptr: felt* = syscall_ptr;
+        tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
     }
-    let (caller: felt) = get_caller_address();
-    let (totalDeposits: Uint256) = IAccountingToken.totalSupplyAt(
-        contract_address=accountingToken.read(), lastSnapshotIdForRewards
+    let (accounting_address: felt) = accounting_token.read();
+    let (last_id: (Uint256, Uint256)) = last_snapshot_id_for_rewards.read();
+
+    let (total_deposits_at_snapshot: Uint256) = IAccountingToken.total_supply(
+        contract_address=accounting_address
     );
-    let (amountDeposited: Uint256) = IAccountingToken.balanceOfAt(
-        contract_address=accountingToken.read(), caller, lastSnapshotIdForRewards
+
+    let (local caller: felt) = get_caller_address();
+
+    let (amount_deposited: Uint256) = IAccountingToken.balance_of(
+        contract_address=accounting_address, account=caller
     );
-    if (uint256_lt(Uint256(0, 0), amountDeposited) == 1) {
-        if (uint256_lt(Uint256(0, 0), totalDeposits) == 1) {
-            let (product: Uint256) = uint256_mul(amountDeposited, Uint256(REWARDS, 0));
-            // rounded down
-            let (rewards: Uint256, _) = uint256_signed_div_rem(product, totalDeposits);
-            if (uint256_lt(Uint256(0, 0), rewards) == 1) {
-                if (_hasRetrievedReward(caller) == 0) {
-                    IRewardToken.mint(contract_address=rewardToken.read(), caller, rewards);
-                    let (block_timestamp: felt) = get_block_timestamp();
-                    lastRewardTimestamps.write(caller, block_timestamp);
+    let (product: Uint256, _) = uint256_mul(amount_deposited, Uint256(REWARDS, 0));
+    let (rewards_amount: Uint256, _) = uint256_signed_div_rem(product, total_deposits_at_snapshot);
+
+    let reward_address: felt = reward_token.read();
+    let (block_number: felt) = get_block_number();
+    let (is_deposited_nz: felt) = uint256_lt(Uint256(0, 0), amount_deposited);
+    let (are_deposits_nz: felt) = uint256_lt(Uint256(0, 0), total_deposits_at_snapshot);
+
+    let (are_rewards_nz: felt) = uint256_lt(Uint256(0, 0), rewards_amount);
+    let (has_retrieved: felt) = _has_retrieved_reward(caller);
+    if (is_deposited_nz == 1) {
+        if (are_deposits_nz == 1) {
+            if (are_rewards_nz == 1) {
+                if (has_retrieved == 0) {
+                    IRewardToken.mint(
+                        contract_address=reward_address, to=caller, amount=rewards_amount
+                    );
+                    last_reward_timestamps.write(caller, block_number);
+                } else {
+                    tempvar syscall_ptr: felt* = syscall_ptr;
+                    tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+                    tempvar range_check_ptr = range_check_ptr;
                 }
+            } else {
+                tempvar syscall_ptr: felt* = syscall_ptr;
+                tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+                tempvar range_check_ptr = range_check_ptr;
             }
+            IRewardToken.mint(contract_address=reward_address, to=caller, amount=rewards_amount);
+            last_reward_timestamps.write(caller, block_number);
+            return (rewards=rewards_amount);
+        } else {
+            tempvar syscall_ptr: felt* = syscall_ptr;
+            tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
         }
+    } else {
+        tempvar syscall_ptr: felt* = syscall_ptr;
+        tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
     }
+    return (rewards=Uint256(0, 0));
 }
 
-func _recordSnapshot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    // lastSnapshotIdForRewards = uint128(accountingToken.snapshot());
-    let (lastSnapshotIdForRewards: Uint256) = IAccountingToken.snapshot(
-        contract_address=accountingToken.read()
+func _record_snapshot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    alloc_locals;
+    let (accounting_address: felt) = accounting_token.read();
+    let (snapshot_id_supply: Uint256, snapshot_id_balance: Uint256) = IAccountingToken.snapshot(
+        contract_address=accounting_address
     );
-    lastRecordedSnapshotTimestamp.write(get_block_timestamp());
-    roundNumber.write(roundNumber.read() + 1);
+    last_snapshot_id_for_rewards.write((snapshot_id_supply, snapshot_id_balance));
+    let (block_number: felt) = get_block_number();
+    last_recorded_snapshot_timestamp.write(block_number);
+
+    let (local number: felt) = round_number.read();
+    local sum = number + 1;
+    round_number.write(sum);
+    return ();
 }
 
-func _hasRetrievedReward{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func _has_retrieved_reward{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     account: felt
 ) -> (bool: felt) {
-    if (is_le(lastRecordedSnapshotTimestamp.read(), lastRewardTimestamps.read(account)) == 1) {
-        if (is_le(lastRewardTimestamps.read(account), lastRecordedSnapshotTimestamp.read() + REWARDS_ROUND_MIN_DURATION) == 1) {
-            return TRUE;
+    let (last_reward) = last_reward_timestamps.read(account);
+    let (last_recorded) = last_recorded_snapshot_timestamp.read();
+
+    let res: felt = is_le(last_recorded, last_reward);
+    if (res == 1) {
+        tempvar syscall_ptr: felt* = syscall_ptr;
+        tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        let res2: felt = is_le(last_reward, last_recorded + REWARDS_ROUND_MIN_DURATION);
+        if (res2 == 1) {
+            tempvar syscall_ptr: felt* = syscall_ptr;
+            tempvar pedersen_ptr: HashBuiltin* = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            return (bool=TRUE);
         }
-    } else {
-        return FALSE;
     }
+    return (bool=FALSE);
 }
 @view
-func isNewRewardsRound{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+func is_new_rewards_round{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     bool: felt
 ) {
-    let (block_timestamp) = get_block_timestamp();
-    let (lastRecorded: felt) = lastRecordedSnapshotTimestamp.read();
-    if (is_le(lastRecorded + REWARDS_ROUND_MIN_DURATION, block_timestamp) == 1) {
-        return TRUE;
-    } else {
-        return FALSE;
+    let (block_number) = get_block_number();
+    let (lastRecorded: felt) = last_recorded_snapshot_timestamp.read();
+    let res: felt = is_le(lastRecorded + REWARDS_ROUND_MIN_DURATION, block_number);
+    if (res == 1) {
+        return (bool=TRUE);
     }
+    return (bool=FALSE);
 }

@@ -8,10 +8,10 @@ from starkware.cairo.common.uint256 import (
     uint256_eq,
     assert_uint256_le,
 )
-
+from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math_cmp import is_le
 
-from openzeppelin.src.security.safemath.library import div_rem, add
+from openzeppelin.security.safemath.library import SafeUint256
 
 func findUpperBound{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     array_len: felt, array: Uint256*, element: Uint256
@@ -31,7 +31,8 @@ func _findUpperBound{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 
     if (uint256_lt(low, high) == 1) {
         let mid_dividend: Uint256 = uint256_add(low, high);
-        let (mid: Uint256, _) = div_rem(mid_dividend, Uint256(2, 0));
+        from openzeppelin.security.safemath.library import SafeUint256
+        let (mid: Uint256, _) = SafeUint256.div_rem(mid_dividend, Uint256(2, 0));
         if (uint256_lt(element, array[mid]) == 1) {
             high = mid;
         } else {
