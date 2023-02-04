@@ -1,9 +1,18 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.starknet.common.syscalls import get_caller_address
-from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
-
+from starkware.starknet.common.syscalls import (
+    get_caller_address,
+    get_block_timestamp,
+    get_block_number,
+)
+from starkware.cairo.common.uint256 import (
+    Uint256,
+    assert_uint256_eq,
+    assert_uint256_lt,
+    assert_uint256_le,
+)
+from starkware.cairo.common.math import assert_not_zero
 from openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.the_rewarder.interfaces.IAccountingToken import IAccountingToken
@@ -52,7 +61,7 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
 
         context.deployer = ids.deployer
         context.attacker = ids.attacker
-
+        context.bob = ids.random_user
         context.accouting_address = load(ids.THE_REWARDER_POOL, "accounting_token", "felt")[0]
         context.rewards_address = load(ids.THE_REWARDER_POOL, "reward_token", "felt")[0]
 
@@ -61,6 +70,8 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
     %}
 
     // Set initial token balance of the pool offering flash loans
+    %{ stop_roll = roll(0) %}
+
     %{ stop_prank_callable = start_prank(ids.deployer, target_contract_address=ids.DVT) %}
     IERC20.transfer(DVT, FLASHLOANER_POOL, tokens_in_pool);
     %{ stop_prank_callable() %}
@@ -68,7 +79,6 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
     with_attr error_message("Pool should have initial token amount") {
         assert_uint256_eq(FLASHLOANER_POOL_balance, tokens_in_pool);
     }
-
     let (bool) = IAccountingToken.has_role(ACCOUNTING_TOKEN, MINTER_ROLE, THE_REWARDER_POOL);
     with_attr error_message("THE_REWARDER_POOL should have MINTER_ROLE") {
         assert bool = 1;
@@ -102,6 +112,24 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
     with_attr error_message("REWARD_TOKEN should have 0 supply") {
         assert total_rewards.low = 0;
     }
+    let (attacker_bal) = IERC20.balanceOf(DVT, attacker);
+    with_attr error_message("attacker should have 0 tokens") {
+        assert attacker_bal.low = 0;
+    }
+    %{ stop_roll() %}
+    %{ stop_roll = roll(101) %}
+    let rewards = 100;
+    %{ stop_prank_callable = start_prank(ids.random_user, target_contract_address=ids.THE_REWARDER_POOL) %}
+    let (value: Uint256) = ITheRewarderPool.distributeRewards(THE_REWARDER_POOL);
+
+    let (bob_balance) = IRewardToken.balanceOf(REWARD_TOKEN, random_user);
+    with_attr error_message("bob should have rewards tokens") {
+        assert bob_balance.low = 100;
+    }
+    %{ stop_prank_callable() %}
+
+    %{ stop_roll() %}
+
     return ();
 }
 
@@ -123,13 +151,12 @@ func test_hack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     local attacker: felt;
 
     local initial_attacker_token_balance: Uint256 = Uint256(100, 0);
+    local tokens_in_pool: Uint256 = Uint256(1000000, 0);
 
+    local round_number: felt;
+
+    local random_user: felt;
     %{
-        print("DVT" + str(context.DVT))
-        print("THE_REWARDER_POOL" + str(context.THE_REWARDER_POOL))
-        print("FLASHLOANER_POOL" + str(context.FLASHLOANER_POOL))
-        print("accouting_address" + str(context.accouting_address))
-        print("rewards_address" + str(context.rewards_address))
         ids.DVT = context.DVT
         ids.THE_REWARDER_POOL = context.THE_REWARDER_POOL
         ids.FLASHLOANER_POOL = context.FLASHLOANER_POOL
@@ -137,11 +164,48 @@ func test_hack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ids.ACCOUNTING_TOKEN = context.accouting_address
 
         ids.attacker = context.attacker
+        ids.random_user = context.bob
     %}
 
     // * ---------------------------- Your code here... --------------------------- * //
 
     // * -------------------------------- Checking -------------------------------- * //
+
+    %{
+        context.round_number = load(ids.THE_REWARDER_POOL, "round_number", "felt")[0]
+        ids.round_number = context.round_number;
+    %}
+    // Only one round must have taken place
+    with_attr error_message("Round number should be 3") {
+        assert round_number = 3;
+    }
+
+    // Users should get neglegible rewards this round
+    ITheRewarderPool.distributeRewards(THE_REWARDER_POOL);
+    let (bob_rewards: Uint256) = IRewardToken.balanceOf(REWARD_TOKEN, random_user);
+
+    with_attr error_message("bob rewards should be low") {
+        assert_uint256_lt(bob_rewards.low, Uint256(100, 0));
+    }
+
+    // Rewards must have been issued to the player account
+    let (reward_supply) = IRewardToken.totalSupply(REWARD_TOKEN);
+    with_attr error_message("Rewards should have be minted") {
+        assert_uint256_lt(Uint256(100, 0), reward_supply);
+    }
+    let (attacker_rewards) = IRewardToken.balanceOf(REWARD_TOKEN, attacker);
+    with_attr error_message("attacker should have rewards") {
+        assert_not_zero(attacker_rewards.low);
+    }
+    // Balance of DVT tokens in player and lending pool hasn't changed
+    let (attacker_bal) = IERC20.balanceOf(DVT, attacker);
+    with_attr error_message("attacker should have 0 DVT") {
+        assert attacker_bal.low = 0;
+    }
+    let (flashloanpool_bal) = IERC20.balanceOf(DVT, FLASHLOANER_POOL);
+    with_attr error_message("FlashloanerPool should have tokens_in_pool DVT") {
+        assert flashloanpool_bal.low = tokens_in_pool.low;
+    }
 
     %{ print("The Rewarder: Challenge Completed! ✨") %}
 
