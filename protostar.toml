@@ -7,19 +7,33 @@ cairo-path = [
 
 [contracts]
 DVT = ["src/DamnValuableToken.cairo"]
+DVNFT = ["src/DamnValuableNFT.cairo"]
 ERC20Snapshot = ["src/extensions/ERC20Snapshot.cairo"]
+SimpleFlashLender=["src/utils/simple_flash_lender/SimpleFlashLender.cairo"]
+SimpleFlashBorrower=["src/utils/simple_flash_lender/SimpleFlashBorrower.cairo"]
 
 AccountingToken =["src/the_rewarder/AccountingToken.cairo"]
 FlashLoanerPool =["src/the_rewarder/FlashLoanerPool.cairo"]
 RewardToken =["src/the_rewarder/RewardToken.cairo"]
 TheRewarderPool =["src/the_rewarder/TheRewarderPool.cairo"]
+
 naive_receiver_lender_pool = ["src/naive_receiver/NaiveReceiverLenderPool.cairo"]
 flash_loan_receiver = ["src/naive_receiver/FlashLoanReceiver.cairo"]
+
 receiver_unstoppable = ["src/unstoppable/ReceiverUnstoppable.cairo"]
 unstoppable_lender = ["src/unstoppable/UnstoppableLender.cairo"]
+
 truster = ["src/truster/TrusterLenderPool.cairo"]
+
 logic_delegate = ["src/logic_delegate/LogicDelegate.cairo"]
-side_entrance_lender_pool = ["src/SideEntranceLenderPool.cairo"]
+
+FreeRiderNFTMarketplace=["src/free_rider/FreeRiderNFTMarketplace.cairo"]
+FreeRiderRecovery=["src/free_rider/FreeRiderRecovery.cairo"]
+FreeRiderAttacker=["src/free_rider/FreeRiderAttacker.cairo"]
 
 [test]
+disable-hint-validation = true
+
+
+[build]
 disable-hint-validation = true
