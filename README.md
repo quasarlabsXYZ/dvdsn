@@ -20,7 +20,8 @@
 | 3    | [Truster](docs/Truster.md)              |
 | 4    | [Side Entrance](docs/SideEntrance.md)   |
 | 5    | [Logic Delegate](docs/LogicDelegate.md) |
-| 6    | [The Rewarder](docs/TheRewarder.md) |
+| 6    | [The Rewarder](docs/TheRewarder.md)     |
+| 7    | [Free Rider](docs/FreeRider.md)         |
 
 
 ## Hacking
