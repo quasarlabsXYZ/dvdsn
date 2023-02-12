@@ -28,7 +28,7 @@
 1. Set up [protostar](https://github.com/software-mansion/protostar)
 2. Clone this [repository](https://github.com/quasarlabsXYZ/dvdsn)
 3. Install dependencies with `protostar install`
-4. Hack and run `protostar test tests/[challenge-name]/test_[challenge-name].challenge.cairo`
+4. Hack and run `protostar test challenges/[challenge-name]/test_[challenge-name].challenge.cairo`
 
 ## Contributing
 
@@ -37,7 +37,7 @@ PRs are welcomed!
 1. Set up [protostar](https://github.com/software-mansion/protostar)
 2. Fork this [repository](https://github.com/quasarlabsXYZ/dvdsn)
 3. Install dependencies with `protostar install`
-4. Create challenge in separated folders under [`src/`](src/) and solving framework under [`tests/`](tests/)
+4. Create challenge in separated folders under [`src/`](src/) and solving framework under [`challenges/`](challenges/)
 5. Add challenge statement under [`docs/`](docs/) and update [`README.md`](README.md)
 
 ## Reference

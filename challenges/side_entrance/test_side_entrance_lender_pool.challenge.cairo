@@ -117,9 +117,7 @@ func test_hack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     // * ---------------------------- Your code here... --------------------------- * //
 
-    IATTACK.borrow(ATTACKER);
-    let (benefits) = IERC20.balanceOf(DVT, ATTACKER);
-    assert benefits = Uint256(deposit_amnt, 0);
+
 
     // * -------------------------------- Checking -------------------------------- * //
 
